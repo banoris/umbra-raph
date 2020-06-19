@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
 
 import google.protobuf.struct_pb2
 import google.protobuf.timestamp_pb2
-import umbra_pb2
+from . import umbra_pb2
 
 
 class BrokerBase(abc.ABC):
