@@ -37,6 +37,7 @@ requirementsFabric() {
   mkdir git
   git clone https://github.com/hyperledger/fabric-sdk-py git/fabric-sdk-py
   cd git/fabric-sdk-py
+  git checkout 5949c1d # version from umbra VM
   sudo python3.7 setup.py install
   cd - 
 }
