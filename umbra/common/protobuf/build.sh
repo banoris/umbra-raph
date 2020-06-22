@@ -13,7 +13,10 @@
 # apt install -y protobuf-compiler
 
 # DO NOT USE RELATIVE PATHS: Run this line inside the folder umbra/umbra/common/protobuf
-python3 -m grpc_tools.protoc --proto_path=$(pwd) --python_out=$(pwd) --grpc_python_out=$(pwd) umbra.proto
-#python3 -m grpc_tools.protoc -I. --python_out=. --grpclib_python_out=. umbra.proto
+#python3.7 -m grpc_tools.protoc --proto_path=$(pwd) --python_out=$(pwd) --grpc_python_out=$(pwd) umbra.proto
+python3.7 -m grpc_tools.protoc -I. --python_out=. --grpclib_python_out=. umbra.proto
 
-
+# NOTE: issue with protobuf import path
+#   https://github.com/protocolbuffers/protobuf/issues/1491
+#   https://github.com/protocolbuffers/protobuf/pull/7470
+sed -i 's/import umbra_pb2/from . import umbra_pb2/g' umbra_grpc.py
