@@ -7,6 +7,8 @@ from umbra.design.configs import FabricTopology
 
 from base_configtx.fabric import org1_policy, org2_policy, org3_policy, org4_policy, orderer_policy, configtx
 
+import networkx as nx
+import matplotlib.pyplot as plt
 
 def build_simple_fabric_cfg():
 
@@ -257,6 +259,12 @@ def build_simple_fabric_cfg():
 
     # Save config file
     scenario.save()
+
+    # print graph info
+    logging.info(nx.info(fab_topo.graph))
+    logging.info(fab_topo.graph.edges())
+    nx.draw(fab_topo.graph)
+    plt.savefig("fabric_configs/graph_network_topo.png")
 
 def builds():
     build_simple_fabric_cfg()
