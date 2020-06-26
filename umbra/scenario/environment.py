@@ -162,7 +162,7 @@ class Environment:
             return cpu_bw_p, cpu_bw_q
 
         resources = node.get("resources")
-        memory = resources.get("memory", 1024)
+        memory = resources.get("memory", 512)
         cpu_bw_p, cpu_bw_q = calculate_cpu_cfs_values(resources)
         
         mng_ip = node.get("mng_intf", None)
