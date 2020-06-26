@@ -81,7 +81,7 @@ def build_simple_fabric_cfg():
     fab_topo.add_org_network_link("orderer", "s0", "E-Line")
 
     # Defines resources for nodes and links
-    node_resources = fab_topo.create_node_profile(cpus=1, memory=1024, disk=None)
+    node_resources = fab_topo.create_node_profile(cpus=1, memory=512, disk=None)
     link_resources = fab_topo.create_link_profile(bw=1, delay='2ms', loss=None)
     
     fab_topo.add_node_profile(node_resources, node_type="container")
