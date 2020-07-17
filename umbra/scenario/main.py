@@ -106,12 +106,16 @@ class Scenario(ScenarioBase):
         return reply
 
     def init(self):
+        # NOTE: anonymous instantiation?
         Playground(self.in_queue, self.out_queue)
         print("Finished Playground")
 
     def start(self):
         self.in_queue = Queue()
         self.out_queue = Queue()
+        # NOTE: how does this work? init will instantiate Playground object,
+        # so which one is it? Process or Playground object? Or Playground
+        # is wrapped to Process?
         self.playground = Process(target=self.init)
         self.playground.start()
         logger.info("Started playground")
@@ -133,6 +137,10 @@ class Scenario(ScenarioBase):
                 await self.call("stop", None)
                 self.stop()
             
+            # NOTE: isn't this blocking? Instantiate Playground() and
+            # you'll get stuck at Playground:loop:`in_queue.get()` ??
+            # NOPE! With new process, you start a new execution
+            # Refer experiment at misc_codes/python/concurrency/multiprocessing1.py
             self.start()            
             reply = await self.call(command, scenario)
 
