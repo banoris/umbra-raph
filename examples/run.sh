@@ -49,24 +49,24 @@ reset() {
     else
         echo_bold "-> Stopping child processes...";
         kill_process_tree 1 $$
-    fi 
+    fi
 
-    echo_bold "Cleaning logs"
-    files=(./logs/*)
-    if [ ${#files[@]} -gt 0 ]; then
-        rm ./logs/*
-    fi 
+    # sleep 10 # time to write stop message to log file?
+    echo_bold "Saving logs"
+    timenow=`date +"%Y_%b_%d_%H_%M"`
+    mkdir ./logs/${timenow}
+    mv ./logs/*.log ./logs/${timenow}
 
     scenarioPID=`ps -o pid --no-headers -C umbra-scenario`
     brokerPID=`ps -o pid --no-headers -C umbra-broker`
     examplesPID=`ps -o pid --no-headers -C examples.py`
-    
+
     if [ -n "$brokerPID" ]
     then
         echo_bold "Stopping umbra-broker ${brokerPID}"
         kill -9 $brokerPID &> /dev/null
     fi
-    
+
     if [ -n "$scenarioPID" ]
     then
         echo_bold "Stopping umbra-scenario ${scenarioPID}"
@@ -131,24 +131,24 @@ case "$COMMAND" in
         nohup ${broker} > logs/broker.log 2>&1 &
         brokerPID=$!
         echo_bold "Broker PID ${brokerPID}"
-        
+
         echo "########################################"
         echo "Running config ${CONFIG_SOURCE}"
         echo "########################################"
-       
-        sleep 6
+
+        sleep 8
         examples="/usr/bin/python3.7 ./examples.py --config ${CONFIG_SOURCE}"
         nohup ${examples} > logs/examples.log 2>&1 &
         examplesPID=$!
         echo_bold "Examples PID ${examplesPID}"
-        
+
         exit 0
         ;;
 
     stop)
         echo_bold "-> Stop"
         reset 1
-        
+
         echo_bold "-> Cleaning mininet"
         sudo mn -c
 
@@ -160,7 +160,7 @@ case "$COMMAND" in
 
         echo_bold "-> Removing docker network: umbra"
         docker network rm umbra
-        
+
         exit 0
         ;;
     *)
