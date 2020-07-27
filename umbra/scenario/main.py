@@ -48,12 +48,13 @@ class Playground:
                 elif cmd == "environment_event":
                     node_name = scenario.get('node_name', None)
                     event = scenario.get('event', None)
+                    params = scenario.get('params', None)
                     if event == "kill_container":
                         reply = self.kill_container(node_name)
-                    elif event == "update_memory_limit":
-                        pass
                     elif event == "update_cpu_limit":
-                        pass
+                        reply= self.update_cpu_limit(node_name, params)
+                    elif event == "update_memory_limit":
+                        reply= self.update_memory_limit(node_name, params)
                     else:
                         reply = {}
                 else:
@@ -118,6 +119,26 @@ class Playground:
 
         return ack
 
+    def update_cpu_limit(self, node_name, params):
+        cpu_quota = params.get('cpu_quota', -1)
+        cpu_period = params.get('cpu_period', -1)
+        cpu_shares = params.get('cpu_shares', -1)
+        cores = params.get('cores', None)
+
+        ok, info = self.exp_topo.update_cpu_limit(node_name,
+            cpu_quota, cpu_period,cpu_shares, cores)
+        logger.info("Updating cpu limit of %s with %s", node_name, params)
+
+        # TODO: exception? error checking?
+        ack = {
+            'ok': str(ok),
+            'msg': {
+                'info': info,
+                'error': info['error'],
+            }
+        }
+
+        return ack
 
     def clear(self):
         exp = Environment({})
