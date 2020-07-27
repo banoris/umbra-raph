@@ -46,7 +46,8 @@ class Playground:
                     reply = self.stop()
                 # TODO: how can user pass node_name for kill_container?
                 elif cmd == "kill_container":
-                    reply = self.kill_container("peer0.org1.example.com")
+                    node_name = scenario.get('node_name', None)
+                    reply = self.kill_container(node_name)
                 else:
                     reply = {}
 
