@@ -141,7 +141,9 @@ class Operator:
             # sleep until all scheduled FabricEvent completes
             await asyncio.sleep(40)
             logger.debug("About to kill_container")
-            ack, topo_info = await self.call_scenario(request.id, "kill_container", {}, address)
+            args = {'event': "kill_container",
+                    'node_name': "peer0.org1.example.com"}
+            ack, topo_info = await self.call_scenario(request.id, "kill_container", args, address)
             logger.debug("Done kill_container")
 
 
