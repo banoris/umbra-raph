@@ -139,20 +139,27 @@ class Operator:
             # NOTE: How to sync Event timing from FabricEvent, EnvEvent, Agent, Monitor?
             # TODO: kill_container?
             # sleep until all scheduled FabricEvent completes
-            await asyncio.sleep(40)
-            logger.debug("About to kill_container")
-            args = {'event': "kill_container",
-                    'node_name': "peer0.org1.example.com",
-                    'params': None,}
+            await asyncio.sleep(42)
+            args_killcontainer = {'event': "kill_container",
+                                'node_name': "peer0.org1.example.com",
+                                'params': None,}
 
-            args2 = {'event': "update_cpu_limit",
-                    'node_name': "peer0.org1.example.com",
-                    'params': {'cpu_quota':   10000,
-                                'cpu_period': 50000,
-                                'cpu_shares': -1,
-                                'cores':      None,}
-                    }
-            ack, topo_info = await self.call_scenario(request.id, "environment_event", args2, address)
+            args_cpulimit = {'event': "update_cpu_limit",
+                            'node_name': "peer0.org1.example.com",
+                            'params': {'cpu_quota':   10000,
+                                        'cpu_period': 50000,
+                                        'cpu_shares': -1,
+                                        'cores':      None,}}
+
+            args_memlimit = {'event': "update_memory_limit",
+                            'node_name': "peer0.org1.example.com",
+                            # memory in term of bytes
+                            'params': {'mem_limit':   256000000,
+                                        'memswap_limit': -1,}}
+
+            logger.debug("About to kill_container")
+            ack, topo_info = await self.call_scenario(request.id, "environment_event",
+                args_memlimit, address)
             logger.debug("Done kill_container")
 
 

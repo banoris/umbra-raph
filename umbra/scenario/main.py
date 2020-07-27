@@ -44,11 +44,11 @@ class Playground:
                     reply = self.start(scenario)
                 elif cmd == "stop":
                     reply = self.stop()
-                # TODO: how can user pass node_name for kill_container?
                 elif cmd == "environment_event":
                     node_name = scenario.get('node_name', None)
                     event = scenario.get('event', None)
                     params = scenario.get('params', None)
+
                     if event == "kill_container":
                         reply = self.kill_container(node_name)
                     elif event == "update_cpu_limit":
@@ -128,6 +128,25 @@ class Playground:
         ok, info = self.exp_topo.update_cpu_limit(node_name,
             cpu_quota, cpu_period,cpu_shares, cores)
         logger.info("Updating cpu limit of %s with %s", node_name, params)
+
+        # TODO: exception? error checking?
+        ack = {
+            'ok': str(ok),
+            'msg': {
+                'info': info,
+                'error': info['error'],
+            }
+        }
+
+        return ack
+
+    def update_memory_limit(self, node_name, params):
+        mem_limit = params.get('mem_limit', -1)
+        memswap_limit = params.get('memswap_limit', -1)
+
+        ok, info = self.exp_topo.update_memory_limit(node_name,
+            mem_limit, memswap_limit)
+        logger.info("Updating mem limit of %s with %s", node_name, params)
 
         # TODO: exception? error checking?
         ack = {
