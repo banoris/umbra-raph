@@ -142,8 +142,17 @@ class Operator:
             await asyncio.sleep(40)
             logger.debug("About to kill_container")
             args = {'event': "kill_container",
-                    'node_name': "peer0.org1.example.com"}
-            ack, topo_info = await self.call_scenario(request.id, "environment_event", args, address)
+                    'node_name': "peer0.org1.example.com",
+                    'params': None,}
+
+            args2 = {'event': "update_cpu_limit",
+                    'node_name': "peer0.org1.example.com",
+                    'params': {'cpu_quota':   10000,
+                                'cpu_period': 50000,
+                                'cpu_shares': -1,
+                                'cores':      None,}
+                    }
+            ack, topo_info = await self.call_scenario(request.id, "environment_event", args2, address)
             logger.debug("Done kill_container")
 
 
