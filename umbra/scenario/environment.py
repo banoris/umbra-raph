@@ -367,6 +367,41 @@ class Environment:
 
         return ok, info
 
+    def update_cpu_limit(self, node_name, cpu_quota=-1, cpu_period=-1,
+            cpu_shares=-1, cores=None):
+        info = {'error': None}
+        ok = True
+
+        if node_name not in self.nodes:
+            info['error'] = f'Container {node_name} does not exist'
+            ok = False
+            return ok, info
+
+        try:
+            self.nodes[node_name].updateCpuLimit(cpu_quota, cpu_period, cpu_shares, cores)
+        except:
+            ok = False
+            info['error'] = f'Failed to updateCpuLimit {node_name}'
+
+        return ok, info
+
+    def update_memory_limit(self, node_name, mem_limit=-1, memswap_limit=-1):
+        info = {'error': None}
+        ok = True
+
+        if node_name not in self.nodes:
+            info['error'] = f'Container {node_name} does not exist'
+            ok = False
+            return ok, info
+
+        try:
+            self.nodes[node_name].updateMemoryLimit(node_name, mem_limit, memswap_limit)
+        except:
+            ok = False
+            info['error'] = f'Failed to updateMemoryLimit {node_name}'
+
+        return ok, info
+
     def mn_cleanup(self):
         clean.cleanup()
 
