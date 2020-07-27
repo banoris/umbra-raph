@@ -186,7 +186,7 @@ class Environment:
             network_mode=node.get("network_mode", "none"),
         )
 
-        logger.debug("Added container: %s", node.get("id"))
+        logger.debug("Added container: %s", node.get("name"))
         return container
     
     def _add_nodes(self):
@@ -349,6 +349,18 @@ class Environment:
         if self.net:
             self.net.stop()
             logger.info("Stopped network: %r" % self.net)
+
+    def kill_container(self, node_name):
+        info = {'error': None}
+        ok = True
+
+        if node_name in self.nodes:
+            self.nodes[node_name].terminate()
+        else:
+            info['error'] = f'Container {node_name} does not exist'
+            ok = False
+
+        return ok, info
 
     def mn_cleanup(self):
         clean.cleanup()

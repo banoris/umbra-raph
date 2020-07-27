@@ -44,6 +44,9 @@ class Playground:
                     reply = self.start(scenario)
                 elif cmd == "stop":
                     reply = self.stop()
+                # TODO: how can user pass node_name for kill_container?
+                elif cmd == "kill_container":
+                    reply = self.kill_container("peer0.org1.example.com")
                 else:
                     reply = {}
 
@@ -54,10 +57,14 @@ class Playground:
 
     def start(self, scenario):
         self.clear()
-        self.exp_topo = Environment(scenario)       
-        ok, info = self.exp_topo.start()       
+        self.exp_topo = Environment(scenario)
+        ok, info = self.exp_topo.start()
+
+        # NOTE: Works! Check the docker.did with docker ps -a
+        # umbra.scenario.main: node_url=ca.org1.example.com, docker.did=5911d28d6cf10ef131cd87744d1670613ecd561fff76c6a0cfb8e2e24363b695
+        for node_url, docker in self.exp_topo.nodes.items():
+            logger.debug("node_url=%s, docker.did=%s", node_url, docker.did)
         logger.info("hosts info %s", info)
-        
 
         msg = {
             "info": info,
@@ -85,6 +92,23 @@ class Playground:
             'msg': msg, 
         }
         return ack
+
+    # TODO: hook to containernet/node.py:Docker:terminate API
+    def kill_container(self, node_name):
+        ok, info = self.exp_topo.kill_container(node_name)
+        logger.info("Terminating container name: %s", node_name)
+
+        # TODO: exception? error checking?
+        ack = {
+            'ok': str(ok),
+            'msg': {
+                'info': info,
+                'error': info['error'],
+            }
+        }
+
+        return ack
+
 
     def clear(self):
         exp = Environment({})
@@ -139,6 +163,8 @@ class Scenario(ScenarioBase):
         elif command == "stop":
             reply = await self.call(command, scenario)
             self.stop()
+        elif command == "kill_container":
+            reply = await self.call(command, scenario)
         else:
             logger.debug(f"Unkown playground command {command}")
             return False, {}
