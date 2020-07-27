@@ -354,11 +354,16 @@ class Environment:
         info = {'error': None}
         ok = True
 
-        if node_name in self.nodes:
-            self.nodes[node_name].terminate()
-        else:
+        if node_name not in self.nodes:
             info['error'] = f'Container {node_name} does not exist'
             ok = False
+            return ok, info
+
+        try:
+            self.nodes[node_name].terminate()
+        except:
+            ok = False
+            info['error'] = f'Failed to kill {node_name}'
 
         return ok, info
 
