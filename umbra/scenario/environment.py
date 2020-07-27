@@ -395,7 +395,7 @@ class Environment:
             return ok, info
 
         try:
-            self.nodes[node_name].updateMemoryLimit(node_name, mem_limit, memswap_limit)
+            self.nodes[node_name].updateMemoryLimit(mem_limit, memswap_limit)
         except:
             ok = False
             info['error'] = f'Failed to updateMemoryLimit {node_name}'
