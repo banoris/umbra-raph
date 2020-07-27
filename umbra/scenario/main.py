@@ -45,9 +45,17 @@ class Playground:
                 elif cmd == "stop":
                     reply = self.stop()
                 # TODO: how can user pass node_name for kill_container?
-                elif cmd == "kill_container":
+                elif cmd == "environment_event":
                     node_name = scenario.get('node_name', None)
-                    reply = self.kill_container(node_name)
+                    event = scenario.get('event', None)
+                    if event == "kill_container":
+                        reply = self.kill_container(node_name)
+                    elif event == "update_memory_limit":
+                        pass
+                    elif event == "update_cpu_limit":
+                        pass
+                    else:
+                        reply = {}
                 else:
                     reply = {}
 
@@ -164,7 +172,7 @@ class Scenario(ScenarioBase):
         elif command == "stop":
             reply = await self.call(command, scenario)
             self.stop()
-        elif command == "kill_container":
+        elif command == "environment_event":
             reply = await self.call(command, scenario)
         else:
             logger.debug(f"Unkown playground command {command}")
