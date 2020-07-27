@@ -237,6 +237,13 @@ def build_simple_fabric_cfg():
         "chaincode_args": ['b'],
     }
 
+    # TODO: add_event to kill_container
+    # ev_kill_container_peer0_org1 = {
+    #     "node_name": "peer0.org1.example.com"
+    #     "what": "kill_container"
+    # }
+
+
     scenario.add_event("0", "fabric", ev_info_channels)
     scenario.add_event("1", "fabric", ev_create_channel)
     scenario.add_event("3", "fabric", ev_join_channel_org1)
@@ -254,6 +261,10 @@ def build_simple_fabric_cfg():
     scenario.add_event("20", "fabric", ev_chaincode_invoke_org1)
     scenario.add_event("30", "fabric", ev_chaincode_query_org1)
     scenario.add_event("32", "fabric", ev_chaincode_query_org2)
+
+    # TODO: kill_container event
+    # scenario.add_event("40", "environment", ev_kill_container_peer0_org1)
+
 
     # Save config file
     scenario.save()

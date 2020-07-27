@@ -120,9 +120,10 @@ class Operator:
         if scenario:
             topology = scenario.get("topology")
             address = scenario.get("entrypoint")
+            # NOTE: takes about 1.5mins to deploy topology
             ack,topo_info = await self.call_scenario(request.id, "start", topology, address)
 
-            if ack:                
+            if ack:
                 events_info = await self.call_events(scenario, topo_info)
 
                 status_info = {
@@ -134,6 +135,15 @@ class Operator:
 
             else:
                 ack,topo_info = await self.call_scenario(request.id, "stop", {}, address)
+
+            # NOTE: How to sync Event timing from FabricEvent, EnvEvent, Agent, Monitor?
+            # TODO: kill_container?
+            # sleep until all scheduled FabricEvent completes
+            await asyncio.sleep(40)
+            logger.debug("About to kill_container")
+            ack, topo_info = await self.call_scenario(request.id, "kill_container", {}, address)
+            logger.debug("Done kill_container")
+
 
         return report
     
