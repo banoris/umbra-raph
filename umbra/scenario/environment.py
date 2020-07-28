@@ -351,56 +351,56 @@ class Environment:
             logger.info("Stopped network: %r" % self.net)
 
     def kill_container(self, node_name):
-        info = {'error': None}
+        err_msg = None
         ok = True
 
         if node_name not in self.nodes:
-            info['error'] = f'Container {node_name} does not exist'
+            err_msg = f'Container {node_name} does not exist'
             ok = False
-            return ok, info
+            return ok, err_msg
 
         try:
             self.nodes[node_name].terminate()
         except:
             ok = False
-            info['error'] = f'Failed to kill {node_name}'
+            err_msg = f'Failed to kill {node_name}'
 
-        return ok, info
+        return ok, err_msg
 
     def update_cpu_limit(self, node_name, cpu_quota=-1, cpu_period=-1,
             cpu_shares=-1, cores=None):
-        info = {'error': None}
+        err_msg = None
         ok = True
 
         if node_name not in self.nodes:
-            info['error'] = f'Container {node_name} does not exist'
+            err_msg = f'Container {node_name} does not exist'
             ok = False
-            return ok, info
+            return ok, err_msg
 
         try:
             self.nodes[node_name].updateCpuLimit(cpu_quota, cpu_period, cpu_shares, cores)
         except:
             ok = False
-            info['error'] = f'Failed to updateCpuLimit {node_name}'
+            err_msg = f'Failed to updateCpuLimit {node_name}'
 
-        return ok, info
+        return ok, err_msg
 
     def update_memory_limit(self, node_name, mem_limit=-1, memswap_limit=-1):
-        info = {'error': None}
+        err_msg = None
         ok = True
 
         if node_name not in self.nodes:
-            info['error'] = f'Container {node_name} does not exist'
+            err_msg = f'Container {node_name} does not exist'
             ok = False
-            return ok, info
+            return ok, err_msg
 
         try:
             self.nodes[node_name].updateMemoryLimit(mem_limit, memswap_limit)
         except:
             ok = False
-            info['error'] = f'Failed to updateMemoryLimit {node_name}'
+            err_msg = f'Failed to updateMemoryLimit {node_name}'
 
-        return ok, info
+        return ok, err_msg
 
     def mn_cleanup(self):
         clean.cleanup()

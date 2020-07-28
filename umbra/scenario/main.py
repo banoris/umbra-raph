@@ -105,15 +105,15 @@ class Playground:
 
     # TODO: hook to containernet/node.py:Docker:terminate API
     def kill_container(self, node_name):
-        ok, info = self.exp_topo.kill_container(node_name)
+        ok, err_msg = self.exp_topo.kill_container(node_name)
         logger.info("Terminating container name: %s", node_name)
 
         # TODO: exception? error checking?
         ack = {
             'ok': str(ok),
             'msg': {
-                'info': info,
-                'error': info['error'],
+                'info': {},
+                'error': err_msg,
             }
         }
 
@@ -125,7 +125,7 @@ class Playground:
         cpu_shares = params.get('cpu_shares', -1)
         cores = params.get('cores', None)
 
-        ok, info = self.exp_topo.update_cpu_limit(node_name,
+        ok, err_msg = self.exp_topo.update_cpu_limit(node_name,
             cpu_quota, cpu_period,cpu_shares, cores)
         logger.info("Updating cpu limit of %s with %s", node_name, params)
 
@@ -133,8 +133,8 @@ class Playground:
         ack = {
             'ok': str(ok),
             'msg': {
-                'info': info,
-                'error': info['error'],
+                'info': {},
+                'error': err_msg,
             }
         }
 
@@ -144,7 +144,7 @@ class Playground:
         mem_limit = params.get('mem_limit', -1)
         memswap_limit = params.get('memswap_limit', -1)
 
-        ok, info = self.exp_topo.update_memory_limit(node_name,
+        ok, err_msg = self.exp_topo.update_memory_limit(node_name,
             mem_limit, memswap_limit)
         logger.info("Updating mem limit of %s with %s", node_name, params)
 
@@ -152,8 +152,8 @@ class Playground:
         ack = {
             'ok': str(ok),
             'msg': {
-                'info': info,
-                'error': info['error'],
+                'info': {},
+                'error': err_msg
             }
         }
 
