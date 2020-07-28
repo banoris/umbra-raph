@@ -29,8 +29,7 @@ def build_simple_fabric_cfg():
     scenario.set_topology(fab_topo)
 
     domain = "example.com"
-    image_tag = "latest"
-    ca_tag = "latest"
+    image_tag = "1.4.0.1"
 
     fab_topo.add_org("org1", domain, policies=org1_policy)
     fab_topo.add_peer("peer0", "org1", anchor=True, image_tag=image_tag)
@@ -47,18 +46,19 @@ def build_simple_fabric_cfg():
     fab_topo.add_peer("peer0", "org4", anchor=True, image_tag=image_tag)  
 
     ord_specs = [
-        {
-            "Hostname": "orderer",
-            "SANS": ["localhost"],
-        },
+        {"Hostname": "orderer"},
+        {"Hostname": "orderer2"},
+        {"Hostname": "orderer3"},
+        {"Hostname": "orderer4"},
+        {"Hostname": "orderer5"},
     ] 
 
     fab_topo.add_orderer("orderer", domain, mode="solo", specs=ord_specs, policies=orderer_policy, image_tag=image_tag)
 
-    fab_topo.add_ca("ca", "org1", domain, "admin", "admin_pw", image_tag=ca_tag)
-    fab_topo.add_ca("ca", "org2", domain, "admin", "admin_pw", image_tag=ca_tag)
-    fab_topo.add_ca("ca", "org3", domain, "admin", "admin_pw", image_tag=ca_tag)
-    fab_topo.add_ca("ca", "org4", domain, "admin", "admin_pw", image_tag=ca_tag)
+    fab_topo.add_ca("ca", "org1", domain, "admin", "admin_pw", image_tag=image_tag)
+    fab_topo.add_ca("ca", "org2", domain, "admin", "admin_pw", image_tag=image_tag)
+    fab_topo.add_ca("ca", "org3", domain, "admin", "admin_pw", image_tag=image_tag)
+    fab_topo.add_ca("ca", "org4", domain, "admin", "admin_pw", image_tag=image_tag)
 
     # Configtx quick fixes - checks which paths from configtx needs to have full org desc
     fab_topo.configtx(configtx)

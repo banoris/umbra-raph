@@ -115,13 +115,13 @@ case "$COMMAND" in
         docker network create umbra
 
         echo_bold "-> Starting umbra-scenarios"
-        scenario="sudo umbra-scenario --uuid scenario --address 172.17.0.1:8988 --debug"
+        scenario="sudo umbra-scenario --uuid scenario --address 172.17.0.1:8988"
         nohup ${scenario} > logs/scenario.log 2>&1 &
         scenariosPID=$!
         echo_bold "Scenario PID ${scenariosPID}"
 
         echo_bold "-> Starting umbra-broker"
-        broker="umbra-broker --uuid broker --address 172.17.0.1:8989 --debug"
+        broker="umbra-broker --uuid broker --address 172.17.0.1:8989"
         nohup ${broker} > logs/broker.log 2>&1 &
         brokerPID=$!
         echo_bold "Broker PID ${brokerPID}"

@@ -1054,7 +1054,6 @@ class FabricTopology(Topology):
                 "EnableNodeOUs": org.get("EnableNodeOUs"),
                 "Template": {
                     "Count": num_org_peers, # TODO: assign peer names accordingly
-                    "SANS": ["localhost"],
                 },
                 "Users": {
                     "Count": 1,
@@ -1206,7 +1205,7 @@ class FabricTopology(Topology):
         genesis_args = [
             "-configPath", output_path,
             "-profile", "TwoOrgsOrdererGenesis",
-            "-channelID", "system-channel",
+            "-channelID", "examplechannel",
             "-outputBlock", output_path+"/genesis.block"
         ]
 

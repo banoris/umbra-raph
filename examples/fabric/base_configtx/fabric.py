@@ -11,10 +11,6 @@ org1_policy = {
         "Type": "Signature",
         "Rule": "OR('org1MSP.admin')"
     },
-    "Endorsement": {
-        "Type": "Signature",
-        "Rule": "OR('org1MSP.peer')",
-    },
 }
 
 org2_policy = {
@@ -29,10 +25,6 @@ org2_policy = {
     "Admins": {
         "Type": "Signature",
         "Rule": "OR('org2MSP.admin')"
-    },
-    "Endorsement": {
-        "Type": "Signature",
-        "Rule": "OR('org1MSP.peer')",
     },
 }
 
@@ -50,10 +42,6 @@ org3_policy = {
         "Type": "Signature",
         "Rule": "OR('org3MSP.admin')"
     },
-    "Endorsement": {
-        "Type": "Signature",
-        "Rule": "OR('org1MSP.peer')",
-    },
 }
 
 
@@ -69,10 +57,6 @@ org4_policy = {
     "Admins": {
         "Type": "Signature",
         "Rule": "OR('org4MSP.admin')"
-    },
-    "Endorsement": {
-        "Type": "Signature",
-        "Rule": "OR('org1MSP.peer')",
     },
 }
 
@@ -94,9 +78,9 @@ orderer_policy = {
 }
 
 
-ChannelCapabilities = {"V2_0": True}
-OrdererCapabilities = {"V2_0": True}
-ApplicationCapabilities = {"V2_0": True}
+ChannelCapabilities = {"V1_3": True}
+OrdererCapabilities = {"V1_1": True}
+ApplicationCapabilities = {"V1_1": False, "V1_2": False, "V1_3": True}
 
 ApplicationDefaults = {
     "Organizations": None,
@@ -112,27 +96,25 @@ ApplicationDefaults = {
         "Admins": {
             "Type": "ImplicitMeta",
             "Rule": "MAJORITY Admins"
-        },
-        "LifecycleEndorsement": {
-            "Type": "ImplicitMeta",
-            "Rule": "MAJORITY Endorsement"
-        },
-        "Endorsement": {
-            "Type": "ImplicitMeta",
-            "Rule": "MAJORITY Endorsement"
-        },
+        }
     },
     "Capabilities": ApplicationCapabilities,
 }
 
 OrdererDefaults = {
-    "OrdererType": "etcdraft",
+    "OrdererType": "solo",
+    "Addresses": [
+        "orderer.example.com:7050",
+    ],
     "BatchTimeout": "2s",
     "BatchSize": {
         "MaxMessageCount": 10,
         "AbsoluteMaxBytes": "99 MB",
         "PreferredMaxBytes": "512 KB",
     },
+    "Kafka": {
+        "Brokers": [ "127.0.0.1:9092" ],
+    },  
     "Organizations": None,
     "Policies": {
         "Readers": {
@@ -151,24 +133,6 @@ OrdererDefaults = {
             "Type": "ImplicitMeta",
             "Rule": "ANY Writers"
         },
-    },
-
-    "EtcdRaft":{
-        "Consenters": [
-            {
-                "Host": "orderer.example.com",
-                "Port": 7050,
-                "ClientTLSCert": "./ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt",
-                "ServerTLSCert": "./ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt",       
-            }
-        ],
-        # "Options": {
-        #   "TickInterval": 50000,
-        #   "ElectionTick": 1000,
-        #   "HeartbeatTick": 1,
-        #   # MaxInflightMsgs: 256
-        #   # MaxSizePerMsg: 1048576
-        # }
     }
 }
 

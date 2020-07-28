@@ -1,11 +1,12 @@
 #!/bin/bash 
 
-export VERSION=latest
+export VERSION=1.4.0
 # if ca version not passed in, default to latest released version
-export CA_VERSION=latest
+export CA_VERSION=$VERSION
+# current version of thirdparty images (couchdb, kafka and zookeeper) released
+export THIRDPARTY_IMAGE_VERSION=0.4.14
 export ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')")
 export MARCH=$(uname -m)
-
 
 CA_TAG="${CA_VERSION}"
 FABRIC_TAG="${VERSION}"
@@ -32,8 +33,6 @@ requirementsFabric() {
   echo "========================================================="
   echo "Installind Fabric Python SDK"
   echo "========================================================="
-
-  sudo apt install python3-dev libssl-dev
 
   mkdir git
   git clone https://github.com/hyperledger/fabric-sdk-py git/fabric-sdk-py
@@ -105,8 +104,7 @@ upgradeDockerImages() {
         echo "========================================================="
         echo
         docker run -d --name $IMAGES hyperledger/fabric-$IMAGES:$TAG
-        # docker exec $IMAGES bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping && apt clean'  
-        docker exec fabric-orderer /bin/sh -c 'apk update && apk add iputils bash'
+        docker exec $IMAGES bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping && apt clean'  
         docker commit $IMAGES hyperledger/fabric-$IMAGES:$TAG.1
         echo "-- Committed docker image: hyperledger/fabric-$IMAGES:$TAG.1 --"
         docker stop -t0 $IMAGES
@@ -117,9 +115,8 @@ upgradeDockerImages() {
     echo "==> Upgrading FABRIC IMAGE: fabric-orderer:$TAG"
     echo "========================================================="
     echo
-    docker run -ti --name fabric-orderer hyperledger/fabric-orderer:$TAG /bin/sh -c 'apk update && apk add iputils bash'
-    # docker exec fabric-orderer bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping && apt clean && rm -R /var/hyperledger/*'
-    # docker exec fabric-orderer /bin/sh -c 'apk update && apk add iputils bash'
+    docker run -d --name fabric-orderer hyperledger/fabric-orderer:$TAG
+    docker exec fabric-orderer bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping && apt clean && rm -R /var/hyperledger/*'
     docker commit fabric-orderer hyperledger/fabric-orderer:$TAG.1
     echo "-- Committed docker image: hyperledger/fabric-orderer:$TAG.1 --"
     docker stop -t0 fabric-orderer
@@ -127,13 +124,13 @@ upgradeDockerImages() {
 
 
     echo "========================================================="
-    echo "==> Upgrading FABRIC IMAGE: fabric-ca:$CA_TAG"
+    echo "==> Upgrading FABRIC IMAGE: fabric-ca:$TAG"
     echo "========================================================="
     echo
-    docker run -d --name fabric-ca hyperledger/fabric-ca:$CA_TAG
+    docker run -d --name fabric-ca hyperledger/fabric-ca:$TAG
     docker exec fabric-ca bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping && apt clean'
-    docker commit fabric-ca hyperledger/fabric-ca:$CA_TAG.1
-    echo "-- Committed docker image: hyperledger/fabric-ca:$CA_TAG.1 --"
+    docker commit fabric-ca hyperledger/fabric-ca:$TAG.1
+    echo "-- Committed docker image: hyperledger/fabric-ca:$TAG.1 --"
     docker stop -t0 fabric-ca
     docker rm fabric-ca
 
@@ -144,18 +141,18 @@ upgradeDockerImages() {
   fi
 }
 
-# requirementsFabric
-# dockerImages
+requirementsFabric
+dockerImages
 upgradeDockerImages ${FABRIC_TAG}
 
 echo "========================================================="
 echo "Adds configtxgen and cryptogen to PATH env"
 echo "========================================================="
 
-# mkdir -p $HOME/hl/bin
-# cp ../umbra/design/fabric/bin/* $HOME/hl/bin/
-# sudo echo 'export PATH=$PATH:$HOME/hl/bin' >> ~/.profile
-# source ~/.profile
+mkdir -p $HOME/hl/bin
+cp ../umbra/design/fabric/bin/* $HOME/hl/bin/
+sudo echo 'export PATH=$PATH:$HOME/hl/bin' >> ~/.profile
+source ~/.profile
 
-# mkdir -p ../examples/fabric/fabric_configs
-# chmod -R 775 ../examples/fabric/fabric_configs
+mkdir -p ../examples/fabric/fabric_configs
+chmod -R 775 ../examples/fabric/fabric_configs
