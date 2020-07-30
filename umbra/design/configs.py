@@ -1424,6 +1424,19 @@ class Events:
         self._ids = 1
         self._events = {}
 
+    # TODO: common/scheduler.py expects this structure:
+    """
+        'schedule': {
+            "from": 0,
+            "until": 14,
+            "duration": 0,
+            "interval": 2,
+            "repeat": 2
+        },
+    """
+    # Think how to make FabricEvent which uses below format (legacy?)
+    # compared to EnvironmentEvent which uses the newer scheduler.py
+    # as task scheduling
     def add(self, when, category, params):
         ev_id = self._ids
         event = {

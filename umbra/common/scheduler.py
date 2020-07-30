@@ -161,6 +161,7 @@ class Handler:
         """
         results = {}
 
+        # NOTE: why await here? But self._schedule inside _build has no await?
         aws = await self._build(calls)
 
         logger.debug(f"Running built coroutines")

@@ -212,6 +212,8 @@ class Scenario(ScenarioBase):
         elif command == "stop":
             reply = await self.call(command, scenario)
             self.stop()
+        # TODO: this env_event contains many types of events, eg. kill_container, cpu/mem limit
+        # Should you just add all of it here or unpack inside Playground:loop ?
         elif command == "environment_event":
             reply = await self.call(command, scenario)
         else:

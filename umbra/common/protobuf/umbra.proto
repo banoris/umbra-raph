@@ -13,6 +13,11 @@ service Broker {
 
 service Scenario {
   rpc Establish(Workflow) returns (Status);
+  // TODO: Instruction message might be overkill...
+  // You just need 'string id' and 'bytes' for dict to parameters
+  // rpc Modify(Environment) returns (Status);
+  // rpc ModifyEnv(Instruction) returns (Status);
+  // TODO: Maybe just reuse Establish? You only need a string for command, e.g.
 }
 
 service Monitor {
@@ -41,6 +46,14 @@ message Workflow {
   bytes scenario = 3;
   google.protobuf.Timestamp timestamp = 4;
 }
+
+// TODO: Do you need this? Very similar to Workflow above
+// message Environment {
+//   string id = 1;
+//   string workflow = 2; // command, e.g. kill_container?
+//   bytes params = 3;
+//   google.protobuf.Timestamp timestamp = 4;
+// }
 
 message Status {
   string id = 1;
