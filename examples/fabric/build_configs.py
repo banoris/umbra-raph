@@ -239,13 +239,24 @@ def build_simple_fabric_cfg():
 
     # TODO: add_event to kill_container
     ev_kill_container_peer0_org1 = {
-        "node_name": "peer0.org1.example.com", # TODO: not hardcode?
-        "command": "kill_container",
+        'node_name': "peer0.org1.example.com", # TODO: not hardcode?
+        'command': "kill_container",
+        'schedule': {
+            "from": 3, # run on the 3rd second, after ev_create_channel
+            "until": 0,
+            "duration": 0,
+            "interval": 0,
+            "repeat": 0
+        },
     }
 
 
     scenario.add_event("0", "fabric", ev_info_channels)
     scenario.add_event("1", "fabric", ev_create_channel)
+    # TODO: kill_container event, note that the first arg for add_event
+    # is not used since we will be using Handler scheduler.py
+    scenario.add_event("3", "environment", ev_kill_container_peer0_org1)
+    """
     scenario.add_event("3", "fabric", ev_join_channel_org1)
     scenario.add_event("3", "fabric", ev_join_channel_org2)
     scenario.add_event("3", "fabric", ev_join_channel_org3)
@@ -261,11 +272,7 @@ def build_simple_fabric_cfg():
     scenario.add_event("20", "fabric", ev_chaincode_invoke_org1)
     scenario.add_event("30", "fabric", ev_chaincode_query_org1)
     scenario.add_event("32", "fabric", ev_chaincode_query_org2)
-
-    # TODO: kill_container event
-    # scenario.add_event("40", "environment", ev_kill_container_peer0_org1)
-
-
+    """
     # Save config file
     scenario.save()
 

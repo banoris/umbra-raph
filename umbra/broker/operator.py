@@ -14,6 +14,7 @@ from umbra.common.protobuf.umbra_pb2 import Report, Workflow
 
 from umbra.design.configs import Topology, Scenario
 from umbra.broker.plugins.fabric import FabricEvents
+from umbra.broker.plugins.environment import EnvironmentEvent
 
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ class Operator:
         self.topology = None
         # TODO: add events_env
         self.events_fabric = FabricEvents()
+        self.events_environment = EnvironmentEvent()
         # TODO: add new plugin called "environment"
         self.plugins = {}
 
@@ -90,7 +92,10 @@ class Operator:
             if ack_fabric:
                 self.plugins["fabric"] = self.events_fabric
 
-        # TODO: plugin == "environment"
+        # TODO: configure EnvironmentEvent plugin
+        logger.info("Configuring EnvironmentEvent")
+        self.plugins["environment"] = self.events_environment
+
 
     def schedule_plugins(self, events):
         for name,plugin in self.plugins.items():
@@ -105,6 +110,8 @@ class Operator:
         self.scenario = Scenario(None, None, None)
         self.scenario.parse(scenario)
         
+        # NOTE: info_deploy is obtained from call_scenario which connects to
+        # umbra-scenario service
         info_topology = info_deploy.get("topology")
         info_hosts = info_deploy.get("hosts")
 
@@ -112,7 +119,7 @@ class Operator:
         #   If delete (terminate container), should it be reflected on the graph?
         #   Also, think about restarting terminated container. E.g., should you
         #   store the information of terminated container somewhere s.t. we can
-        #   refer it again later?
+        #   refer it again later? The data is somewhere in the json file...
         # TODO: if above is too complicated, focus on basic feature first
         topo = self.scenario.get_topology()
         topo.fill_config(info_topology)
@@ -137,7 +144,7 @@ class Operator:
             address = scenario.get("entrypoint")
             # NOTE: takes about 1.5mins to deploy topology
             ack,topo_info = await self.call_scenario(request.id, "start", topology, address)
-
+            # topo_info = {'hosts': {}, 'topology': {'hosts': {'peer0.org1.example.com': {'name': 'peer0.org1.example.com', 'intfs': {'eth1': 0}}, 'peer1.org1.example.com': {'name': 'peer1.org1.example.com', 'intfs': {'eth1': 0}}, 'peer0.org2.example.com': {'name': 'peer0.org2.example.com', 'intfs': {'eth1': 0}}, 'peer1.org2.example.com': {'name': 'peer1.org2.example.com', 'intfs': {'eth1': 0}}, 'peer0.org3.example.com': {'name': 'peer0.org3.example.com', 'intfs': {'eth1': 0}}, 'peer0.org4.example.com': {'name': 'peer0.org4.example.com', 'intfs': {'eth1': 0}}, 'ca.org1.example.com': {'name': 'ca.org1.example.com', 'intfs': {'eth1': 0}}, 'ca.org2.example.com': {'name': 'ca.org2.example.com', 'intfs': {'eth1': 0}}, 'ca.org3.example.com': {'name': 'ca.org3.example.com', 'intfs': {'eth1': 0}}, 'ca.org4.example.com': {'name': 'ca.org4.example.com', 'intfs': {'eth1': 0}}, 'orderer.example.com': {'name': 'orderer.example.com', 'intfs': {'eth1': 0}}}, 'switches': {'s0': {'name': 's0', 'dpid': '0000000000000000', 'intfs': {'lo': 0, 's0-eth1': 1, 's0-eth2': 2, 's0-eth3': 3, 's0-eth4': 4, 's0-eth5': 5, 's0-eth6': 6, 's0-eth7': 7, 's0-eth8': 8, 's0-eth9': 9, 's0-eth10': 10, 's0-eth11': 11}}}, 'links': {'eth1<->s0-eth1': {'name': 'eth1<->s0-eth1', 'src': 'peer0.org1.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth1'}, 'eth1<->s0-eth2': {'name': 'eth1<->s0-eth2', 'src': 'peer1.org1.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth2'}, 'eth1<->s0-eth3': {'name': 'eth1<->s0-eth3', 'src': 'peer0.org2.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth3'}, 'eth1<->s0-eth4': {'name': 'eth1<->s0-eth4', 'src': 'peer1.org2.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth4'}, 'eth1<->s0-eth5': {'name': 'eth1<->s0-eth5', 'src': 'peer0.org3.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth5'}, 'eth1<->s0-eth6': {'name': 'eth1<->s0-eth6', 'src': 'peer0.org4.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth6'}, 'eth1<->s0-eth7': {'name': 'eth1<->s0-eth7', 'src': 'ca.org1.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth7'}, 'eth1<->s0-eth8': {'name': 'eth1<->s0-eth8', 'src': 'ca.org2.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth8'}, 'eth1<->s0-eth9': {'name': 'eth1<->s0-eth9', 'src': 'ca.org3.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth9'}, 'eth1<->s0-eth10': {'name': 'eth1<->s0-eth10', 'src': 'ca.org4.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth10'}, 'eth1<->s0-eth11': {'name': 'eth1<->s0-eth11', 'src': 'orderer.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth11'}}}}
             if ack:
                 events_info = await self.call_events(scenario, topo_info)
 
@@ -150,7 +157,7 @@ class Operator:
 
             else:
                 ack,topo_info = await self.call_scenario(request.id, "stop", {}, address)
-
+            """
             # sleep until all scheduled FabricEvent completes
             await asyncio.sleep(42)
             args_killcontainer = {'event': "kill_container",
@@ -175,7 +182,7 @@ class Operator:
             ack, topo_info = await self.call_scenario(request.id, "environment_event",
                 args_memlimit, address)
             logger.debug("Done kill_container")
-
+            """
 
         return report
     
