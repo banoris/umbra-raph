@@ -565,6 +565,7 @@ class Tools:
     async def handle(self, instruction):
         actions = instruction.get("actions")
         calls = self.build_calls(actions)
+        # NOTE: why need await here?
         results = await self.handler.run(calls)
         evals = self.build_outputs(results)
         logger.info(f"Finished handling instruction actions")

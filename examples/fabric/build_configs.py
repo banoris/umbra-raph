@@ -238,10 +238,10 @@ def build_simple_fabric_cfg():
     }
 
     # TODO: add_event to kill_container
-    # ev_kill_container_peer0_org1 = {
-    #     "node_name": "peer0.org1.example.com"
-    #     "what": "kill_container"
-    # }
+    ev_kill_container_peer0_org1 = {
+        "node_name": "peer0.org1.example.com", # TODO: not hardcode?
+        "command": "kill_container",
+    }
 
 
     scenario.add_event("0", "fabric", ev_info_channels)

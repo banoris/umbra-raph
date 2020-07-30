@@ -83,6 +83,9 @@ class TestMonitor(unittest.TestCase):
         
         
         tools = Tools()
+        # NOTE: refer https://googleapis.dev/python/protobuf/latest/google/protobuf/json_format.html
+        # ParseDict: Parses a JSON dictionary representation into a message
+        # MessageToDict: Converts protobuf message to a dictionary
         instruction = json_format.ParseDict(inst_dict, Instruction())
         instruction_dict = json_format.MessageToDict(instruction, preserving_proto_field_name=True)
         snapshot_dict = asyncio.run(tools.handle(instruction_dict))

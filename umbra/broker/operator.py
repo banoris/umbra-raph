@@ -24,7 +24,9 @@ class Operator:
         self.info = info
         self.scenario = None
         self.topology = None
+        # TODO: add events_env
         self.events_fabric = FabricEvents()
+        # TODO: add new plugin called "environment"
         self.plugins = {}
 
     def parse_bytes(self, msg):
@@ -48,6 +50,7 @@ class Operator:
     async def call_scenario(self, test, command, topology, address):
         logger.info(f"Deploying Scenario - {command}")
 
+        # TODO: refactor this method to support both Scenario.Establish and Scenario.Modify
         scenario = self.serialize_bytes(topology)
         deploy = Workflow(id=test, workflow=command, scenario=scenario)
         deploy.timestamp.FromDatetime(datetime.now())
@@ -55,6 +58,7 @@ class Operator:
         host, port = address.split(":")
         channel = Channel(host, port)
         stub = ScenarioStub(channel)
+        # TODO: connect to Modify method which takes Environment
         status = await stub.Establish(deploy)
 
         if status.error:
@@ -65,6 +69,7 @@ class Operator:
             logger.info(f'Scenario deployed: {status.ok}')
 
             info = self.parse_bytes(status.info)
+            logger.debug(f'info = {info}')
 
         channel.close()
 
@@ -85,9 +90,13 @@ class Operator:
             if ack_fabric:
                 self.plugins["fabric"] = self.events_fabric
 
+        # TODO: plugin == "environment"
+
     def schedule_plugins(self, events):
         for name,plugin in self.plugins.items():
             logger.info("Scheduling plugin %s events", name)
+            # TODO: Environment plugin MUST implement schedule method (abstract)
+            # Basically 'schedule' will schedule a call to call_scenario to be executed later
             plugin.schedule(events)
 
     async def call_events(self, scenario, info_deploy):
@@ -99,6 +108,12 @@ class Operator:
         info_topology = info_deploy.get("topology")
         info_hosts = info_deploy.get("hosts")
 
+        # TODO: to modify the topology based on EnvironmentEvent?
+        #   If delete (terminate container), should it be reflected on the graph?
+        #   Also, think about restarting terminated container. E.g., should you
+        #   store the information of terminated container somewhere s.t. we can
+        #   refer it again later?
+        # TODO: if above is too complicated, focus on basic feature first
         topo = self.scenario.get_topology()
         topo.fill_config(info_topology)
         topo.fill_hosts_config(info_hosts)
@@ -136,8 +151,6 @@ class Operator:
             else:
                 ack,topo_info = await self.call_scenario(request.id, "stop", {}, address)
 
-            # NOTE: How to sync Event timing from FabricEvent, EnvEvent, Agent, Monitor?
-            # TODO: kill_container?
             # sleep until all scheduled FabricEvent completes
             await asyncio.sleep(42)
             args_killcontainer = {'event': "kill_container",
@@ -158,6 +171,7 @@ class Operator:
                                         'memswap_limit': -1,}}
 
             logger.debug("About to kill_container")
+            # TODO: replace with call_event, which will schedule a call to call_scenario
             ack, topo_info = await self.call_scenario(request.id, "environment_event",
                 args_memlimit, address)
             logger.debug("Done kill_container")

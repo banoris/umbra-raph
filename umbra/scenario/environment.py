@@ -361,6 +361,7 @@ class Environment:
 
         try:
             self.nodes[node_name].terminate()
+            # TODO: remove self.nodes[node_name]? Can it be restarted back with addDocker?
         except:
             ok = False
             err_msg = f'Failed to kill {node_name}'
