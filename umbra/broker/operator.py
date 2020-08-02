@@ -14,7 +14,7 @@ from umbra.common.protobuf.umbra_pb2 import Report, Workflow
 
 from umbra.design.configs import Topology, Scenario
 from umbra.broker.plugins.fabric import FabricEvents
-from umbra.broker.plugins.environment import EnvironmentEvent
+from umbra.broker.plugins.env import EnvironmentEvent
 
 
 logger = logging.getLogger(__name__)
@@ -94,21 +94,28 @@ class Operator:
 
         # TODO: configure EnvironmentEvent plugin
         logger.info("Configuring EnvironmentEvent")
+        self.events_environment.config(self.scenario.entrypoint)
         self.plugins["environment"] = self.events_environment
 
 
     def schedule_plugins(self, events):
         for name,plugin in self.plugins.items():
             logger.info("Scheduling plugin %s events", name)
-            # TODO: Environment plugin MUST implement schedule method (abstract)
-            # Basically 'schedule' will schedule a call to call_scenario to be executed later
-            plugin.schedule(events)
+            # TODO: filter events based on plugin type, e.g. 'fabric' vs 'environment'
+            # Pass the right events for the right plugins, e.g. only pass
+            # category='environment' events to plugins['environment']
+            filtered_events = {key: value for key, value in events.items()
+                                if value['category'] == name}
+            # logger.info("filtered_events = %s", filtered_events)
+            plugin.schedule(filtered_events)
 
     async def call_events(self, scenario, info_deploy):
         logger.info("Scheduling events")
                 
         self.scenario = Scenario(None, None, None)
         self.scenario.parse(scenario)
+
+        logger.debug("scenario.entrypoint=%s", self.scenario.entrypoint)
         
         # NOTE: info_deploy is obtained from call_scenario which connects to
         # umbra-scenario service
@@ -160,18 +167,18 @@ class Operator:
             """
             # sleep until all scheduled FabricEvent completes
             await asyncio.sleep(42)
-            args_killcontainer = {'event': "kill_container",
+            args_killcontainer = {'action': "kill_container",
                                 'node_name': "peer0.org1.example.com",
                                 'params': None,}
 
-            args_cpulimit = {'event': "update_cpu_limit",
+            args_cpulimit = {'action': "update_cpu_limit",
                             'node_name': "peer0.org1.example.com",
                             'params': {'cpu_quota':   10000,
                                         'cpu_period': 50000,
                                         'cpu_shares': -1,
                                         'cores':      None,}}
 
-            args_memlimit = {'event': "update_memory_limit",
+            args_memlimit = {'action': "update_memory_limit",
                             'node_name': "peer0.org1.example.com",
                             # memory in term of bytes
                             'params': {'mem_limit':   256000000,

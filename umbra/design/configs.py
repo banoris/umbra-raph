@@ -1470,7 +1470,9 @@ class Scenario:
             self.topology = topo
             self.events.parse(data.get("events", {}))
             self.name = data.get("id", None)
-            self.author = data.get("entrypoint", None)
+            # TODO:FIXME: self.author??? typo? Issue #5
+            # self.author = data.get("entrypoint", None)
+            self.entrypoint = data.get("entrypoint", None)
             return True
         return False
 

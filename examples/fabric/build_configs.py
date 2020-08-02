@@ -239,8 +239,12 @@ def build_simple_fabric_cfg():
 
     # TODO: add_event to kill_container
     ev_kill_container_peer0_org1 = {
-        'node_name': "peer0.org1.example.com", # TODO: not hardcode?
-        'command': "kill_container",
+        'command': "environment_event",
+        'args': {
+            'node_name': "peer0.org1.example.com", # TODO: not hardcode?
+            'action': "kill_container",
+            'action_args': {},
+        },
         'schedule': {
             "from": 3, # run on the 3rd second, after ev_create_channel
             "until": 0,

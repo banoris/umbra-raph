@@ -46,15 +46,15 @@ class Playground:
                     reply = self.stop()
                 elif cmd == "environment_event":
                     node_name = scenario.get('node_name', None)
-                    event = scenario.get('event', None)
-                    params = scenario.get('params', None)
+                    action = scenario.get('action', None)
+                    action_args = scenario.get('action_args', None)
 
-                    if event == "kill_container":
+                    if action == "kill_container":
                         reply = self.kill_container(node_name)
-                    elif event == "update_cpu_limit":
-                        reply= self.update_cpu_limit(node_name, params)
-                    elif event == "update_memory_limit":
-                        reply= self.update_memory_limit(node_name, params)
+                    elif action == "update_cpu_limit":
+                        reply= self.update_cpu_limit(node_name, action_args)
+                    elif action == "update_memory_limit":
+                        reply= self.update_memory_limit(node_name, action_args)
                     else:
                         reply = {}
                 else:
