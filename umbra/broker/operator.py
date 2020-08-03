@@ -77,7 +77,7 @@ class Operator:
 
         return ack,info  
 
-    def config_plugins(self):
+    def config_plugins(self, test_id):
         logger.info("Configuring Umbra plugins")
         umbra_cfgs = self.topology.umbra
         plugin = umbra_cfgs.get("plugin")
@@ -94,7 +94,7 @@ class Operator:
 
         # TODO: configure EnvironmentEvent plugin
         logger.info("Configuring EnvironmentEvent")
-        self.events_environment.config(self.scenario.entrypoint)
+        self.events_environment.config(self.scenario.entrypoint, test_id)
         self.plugins["environment"] = self.events_environment
 
 
@@ -109,7 +109,7 @@ class Operator:
             # logger.info("filtered_events = %s", filtered_events)
             plugin.schedule(filtered_events)
 
-    async def call_events(self, scenario, info_deploy):
+    async def call_events(self, test_id, scenario, info_deploy):
         logger.info("Scheduling events")
                 
         self.scenario = Scenario(None, None, None)
@@ -132,7 +132,7 @@ class Operator:
         topo.fill_config(info_topology)
         topo.fill_hosts_config(info_hosts)
         self.topology = topo
-        self.config_plugins()
+        self.config_plugins(test_id)
 
         events = scenario.get("events")
         self.schedule_plugins(events)
@@ -153,7 +153,7 @@ class Operator:
             ack,topo_info = await self.call_scenario(request.id, "start", topology, address)
             # topo_info = {'hosts': {}, 'topology': {'hosts': {'peer0.org1.example.com': {'name': 'peer0.org1.example.com', 'intfs': {'eth1': 0}}, 'peer1.org1.example.com': {'name': 'peer1.org1.example.com', 'intfs': {'eth1': 0}}, 'peer0.org2.example.com': {'name': 'peer0.org2.example.com', 'intfs': {'eth1': 0}}, 'peer1.org2.example.com': {'name': 'peer1.org2.example.com', 'intfs': {'eth1': 0}}, 'peer0.org3.example.com': {'name': 'peer0.org3.example.com', 'intfs': {'eth1': 0}}, 'peer0.org4.example.com': {'name': 'peer0.org4.example.com', 'intfs': {'eth1': 0}}, 'ca.org1.example.com': {'name': 'ca.org1.example.com', 'intfs': {'eth1': 0}}, 'ca.org2.example.com': {'name': 'ca.org2.example.com', 'intfs': {'eth1': 0}}, 'ca.org3.example.com': {'name': 'ca.org3.example.com', 'intfs': {'eth1': 0}}, 'ca.org4.example.com': {'name': 'ca.org4.example.com', 'intfs': {'eth1': 0}}, 'orderer.example.com': {'name': 'orderer.example.com', 'intfs': {'eth1': 0}}}, 'switches': {'s0': {'name': 's0', 'dpid': '0000000000000000', 'intfs': {'lo': 0, 's0-eth1': 1, 's0-eth2': 2, 's0-eth3': 3, 's0-eth4': 4, 's0-eth5': 5, 's0-eth6': 6, 's0-eth7': 7, 's0-eth8': 8, 's0-eth9': 9, 's0-eth10': 10, 's0-eth11': 11}}}, 'links': {'eth1<->s0-eth1': {'name': 'eth1<->s0-eth1', 'src': 'peer0.org1.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth1'}, 'eth1<->s0-eth2': {'name': 'eth1<->s0-eth2', 'src': 'peer1.org1.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth2'}, 'eth1<->s0-eth3': {'name': 'eth1<->s0-eth3', 'src': 'peer0.org2.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth3'}, 'eth1<->s0-eth4': {'name': 'eth1<->s0-eth4', 'src': 'peer1.org2.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth4'}, 'eth1<->s0-eth5': {'name': 'eth1<->s0-eth5', 'src': 'peer0.org3.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth5'}, 'eth1<->s0-eth6': {'name': 'eth1<->s0-eth6', 'src': 'peer0.org4.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth6'}, 'eth1<->s0-eth7': {'name': 'eth1<->s0-eth7', 'src': 'ca.org1.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth7'}, 'eth1<->s0-eth8': {'name': 'eth1<->s0-eth8', 'src': 'ca.org2.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth8'}, 'eth1<->s0-eth9': {'name': 'eth1<->s0-eth9', 'src': 'ca.org3.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth9'}, 'eth1<->s0-eth10': {'name': 'eth1<->s0-eth10', 'src': 'ca.org4.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth10'}, 'eth1<->s0-eth11': {'name': 'eth1<->s0-eth11', 'src': 'orderer.example.com', 'dst': 's0', 'src-port': 'eth1', 'dst-port': 's0-eth11'}}}}
             if ack:
-                events_info = await self.call_events(scenario, topo_info)
+                events_info = await self.call_events(request.id, scenario, topo_info)
 
                 status_info = {
                     'topology': topo_info,
