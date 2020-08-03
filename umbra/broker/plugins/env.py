@@ -1,4 +1,5 @@
 import logging
+import json
 
 from datetime import datetime
 
@@ -19,11 +20,13 @@ class EnvironmentEvent():
         self.address = None
         # TODO: what's the best way to get this id required by
         # Workflow message for umbra-scenario server?
-        self.test_id = None
+        self.wflow_id = None
+        self.command = None
+        self.wflow_scenario = None
 
-    def config(self, address, test_id):
+    def config(self, address, wflow_id):
         self.address = address
-        self.test_id = test_id
+        self.wflow_id = wflow_id
 
     def parse_bytes(self, msg):
         msg_dict = {}
@@ -45,14 +48,14 @@ class EnvironmentEvent():
 
     # TODO: connect to umbra-scenario Establish, pass some stuff
     # Handler will take this and run
-    async def call_scenario(self, command, scenario):
-        logger.info(f"Deploying Scenario - {command}")
+    async def call_scenario(self):
+        logger.info(f"START call_scenario")
 
         # TODO: 'scenario' in Workflow message is just a json input to be
         # parsed by the receiving umbra-scenario server
         # Maybe can change to more generic name
-        scenario = self.serialize_bytes(scenario)
-        deploy = Workflow(id=self.test_id, workflow=command, scenario=scenario)
+        self.wflow_scenario = self.serialize_bytes(self.wflow_scenario)
+        deploy = Workflow(id=self.wflow_id, workflow=self.command, scenario=self.wflow_scenario)
         deploy.timestamp.FromDatetime(datetime.now())
 
         host, port = self.address.split(":")
@@ -72,6 +75,8 @@ class EnvironmentEvent():
 
         channel.close()
 
+        logger.info(f"END call_scenario")
+
         return ack, info
 
     def build_calls(self, events):
@@ -81,7 +86,12 @@ class EnvironmentEvent():
             params = event_args.get('params', {})
             # TODO: function or coroutine? Recall the fix 'repeat' bug
             # Without '()', it will be function
-            action_call = self.call_scenario(params['command'], params['args'])
+            # action_call = self.call_scenario(params['command'], params['args'])
+
+            # TODO: how to do this properly? Compare with tools.init()
+            self.command = params['command']
+            self.wflow_scenario = params['args']
+            action_call = self.call_scenario
             # action_sched = event_args.get('params', {}).get('schedule', {})
             action_sched = params.get('schedule', {})
             logger.debug(f'ASD: action_sched={action_sched}')
@@ -90,20 +100,22 @@ class EnvironmentEvent():
 
         return calls
 
+    # dummy schedule implementation called in operator.py:schedule_plugins
     def schedule(self, events):
         # {'3': {'category': 'environment', 'ev': 3, 'params': {'args': {'action': 'kill_container', 'action_args': {}, 'node_name': 'peer0.org1.example.com'}, 'command': 'environment_event', 'schedule': {'duration': 0, 'from': 3, 'interval': 0, 'repeat': 0, 'until': 0}}, 'when': '3'}}
         # TODO: restructure above dict
         logger.info("HELLO EnvironmentEvent, events=%s", events)
-        calls = self.build_calls(events)
-        # results = await self.handler.run(calls)
+        # calls = self.build_calls(events)
 
 
      # refer agent/tools.py
-    async def handle(self, instruction):
-        pass
-        # actions = instruction.get("actions")
-        # calls = self.build_calls(actions)
-        # results = await self.handler.run(calls)
+    async def handle(self, events):
+        # TODO: check the timing for log below and the next log "results=" to see whether
+        # the task scheduling works as expected
+        logger.info("ASD: scheduling EnvironmentEvent...")
+        calls = self.build_calls(events)
+        results = await self.handler.run(calls)
+        logger.debug(f"ASD: results={results}")
         # evals = self.build_outputs(results)
         # logger.info(f"Finished handling instruction actions")
         # snap = {

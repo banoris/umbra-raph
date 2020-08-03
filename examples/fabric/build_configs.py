@@ -246,7 +246,7 @@ def build_simple_fabric_cfg():
             'action_args': {},
         },
         'schedule': {
-            "from": 3, # run on the 3rd second, after ev_create_channel
+            "from": 4, # run on the 4th second, after ev_create_channel
             "until": 0,
             "duration": 0,
             "interval": 0,

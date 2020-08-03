@@ -26,7 +26,7 @@ class Operator:
         self.topology = None
         # TODO: add events_env
         self.events_fabric = FabricEvents()
-        self.events_environment = EnvironmentEvent()
+        self.events_env = EnvironmentEvent()
         # TODO: add new plugin called "environment"
         self.plugins = {}
 
@@ -124,6 +124,23 @@ class Operator:
         events = scenario.get("events")
         self.schedule_plugins(events)
 
+    def config_env_event(self, wflow_id):
+        logger.info("Configuring EnvironmentEvent")
+        self.events_env.config(self.scenario.entrypoint, wflow_id)
+        self.plugins["environment"] = self.events_env
+
+    # TODO: maybe no need? call EnvironmentEvent.handler()
+    async def schedule_env_event(self):
+        pass
+
+    async def call_env_event(self, wflow_id, scenario):
+        self.config_env_event(wflow_id)
+        events = scenario.get("events")
+        # filter out non "environment" type events
+        env_events = {key: value for key, value in events.items()
+                            if value['category'] == "environment"}
+        await self.events_env.handle(env_events)
+
     async def run(self, request):
         logger.info("Running config request")
         report = Report(id=request.id)
@@ -151,6 +168,9 @@ class Operator:
 
             else:
                 ack,topo_info = await self.call_scenario(request.id, "stop", {}, address)
+
+            await self.call_env_event(request.id, scenario)
+
             """
             # sleep until all scheduled FabricEvent completes
             await asyncio.sleep(42)
