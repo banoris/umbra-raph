@@ -14,7 +14,7 @@ from umbra.common.protobuf.umbra_pb2 import Report, Workflow
 
 from umbra.design.configs import Topology, Scenario
 from umbra.broker.plugins.fabric import FabricEvents
-
+from umbra.broker.plugins.env import EnvironmentEvent
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ class Operator:
         self.topology = None
         # TODO: add events_env
         self.events_fabric = FabricEvents()
+        self.events_environment = EnvironmentEvent()
         # TODO: add new plugin called "environment"
         self.plugins = {}
 
@@ -150,21 +151,21 @@ class Operator:
 
             else:
                 ack,topo_info = await self.call_scenario(request.id, "stop", {}, address)
-
+            """
             # sleep until all scheduled FabricEvent completes
             await asyncio.sleep(42)
-            args_killcontainer = {'event': "kill_container",
+            args_killcontainer = {'action': "kill_container",
                                 'node_name': "peer0.org1.example.com",
                                 'params': None,}
 
-            args_cpulimit = {'event': "update_cpu_limit",
+            args_cpulimit = {'action': "update_cpu_limit",
                             'node_name': "peer0.org1.example.com",
                             'params': {'cpu_quota':   10000,
                                         'cpu_period': 50000,
                                         'cpu_shares': -1,
                                         'cores':      None,}}
 
-            args_memlimit = {'event': "update_memory_limit",
+            args_memlimit = {'action': "update_memory_limit",
                             'node_name': "peer0.org1.example.com",
                             # memory in term of bytes
                             'params': {'mem_limit':   256000000,
@@ -175,7 +176,7 @@ class Operator:
             ack, topo_info = await self.call_scenario(request.id, "environment_event",
                 args_memlimit, address)
             logger.debug("Done kill_container")
-
+            """
 
         return report
     
