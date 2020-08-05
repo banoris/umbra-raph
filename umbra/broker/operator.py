@@ -14,7 +14,7 @@ from umbra.common.protobuf.umbra_pb2 import Report, Workflow
 
 from umbra.design.configs import Topology, Scenario
 from umbra.broker.plugins.fabric import FabricEvents
-from umbra.broker.plugins.env import EnvironmentEvent
+from umbra.broker.plugins.env import EnvEventHandler
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class Operator:
         self.topology = None
         # TODO: add events_env
         self.events_fabric = FabricEvents()
-        self.events_env = EnvironmentEvent()
+        self.events_env = EnvEventHandler()
         # TODO: add new plugin called "environment"
         self.plugins = {}
 

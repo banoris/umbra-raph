@@ -239,13 +239,13 @@ def build_simple_fabric_cfg():
 
     # TODO: add_event to kill_container
     ev_kill_container_peer0_org1 = {
-        'command': "environment_event",
-        'args': {
-            'node_name': "peer0.org1.example.com", # TODO: not hardcode?
-            'action': "kill_container",
-            'action_args': {},
+        "command": "environment_event",
+        "args": {
+            "node_name": "peer0.org1.example.com", # TODO: not hardcode?
+            "action": "kill_container",
+            "action_args": {},
         },
-        'schedule': {
+        "schedule": {
             "from": 4, # run on the 4th second, after ev_create_channel
             "until": 0,
             "duration": 0,
@@ -254,12 +254,69 @@ def build_simple_fabric_cfg():
         },
     }
 
+    ev_kill_container_peer0_org2 = {
+        "command": "environment_event",
+        "args": {
+            "node_name": "peer0.org2.example.com", # TODO: not hardcode?
+            "action": "kill_container",
+            "action_args": {},
+        },
+        "schedule": {
+            "from": 4, # run on the 4th second, after ev_create_channel
+            "until": 0,
+            "duration": 0,
+            "interval": 0,
+            "repeat": 0
+        },
+    }
 
+    ev_mem_limit_peer1_org1 = {
+        "command": "environment_event",
+        "args": {
+            "action": "update_memory_limit",
+            "action_args": {
+                "mem_limit": 256000000,
+                "memswap_limit": -1
+            },
+            "node_name": "peer1.org1.example.com"
+        },
+        "schedule": {
+            "from": 4, # run on the 4th second, after ev_create_channel
+            "until": 0,
+            "duration": 0,
+            "interval": 0,
+            "repeat": 0
+        },
+    }
+
+    ev_cpu_limit_peer1_org2 = {
+        "command": "environment_event",
+        "args": {
+            "action": "update_cpu_limit",
+            "action_args": {
+                "cpu_quota": 10000,
+                "cpu_period": 50000,
+                "cpu_shares": -1,
+                "cores": {}
+            },
+            "node_name": "peer1.org2.example.com"
+        },
+        "schedule": {
+            "from": 4, # run on the 4th second, after ev_create_channel
+            "until": 0,
+            "duration": 0,
+            "interval": 0,
+            "repeat": 0
+        },
+    }
     scenario.add_event("0", "fabric", ev_info_channels)
     scenario.add_event("1", "fabric", ev_create_channel)
     # TODO: kill_container event, note that the first arg for add_event
     # is not used since we will be using Handler scheduler.py
     scenario.add_event("3", "environment", ev_kill_container_peer0_org1)
+    scenario.add_event("4", "environment", ev_kill_container_peer0_org2)
+    scenario.add_event("5", "environment", ev_mem_limit_peer1_org1)
+    scenario.add_event("6", "environment", ev_cpu_limit_peer1_org2)
     """
     scenario.add_event("3", "fabric", ev_join_channel_org1)
     scenario.add_event("3", "fabric", ev_join_channel_org2)
