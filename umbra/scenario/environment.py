@@ -127,6 +127,7 @@ class Environment:
         
     def update(self, events):
         ack = False
+        err_msg = None
 
         if self.net:
             logger.info("Updating network: %r" % self.net)
@@ -144,7 +145,7 @@ class Environment:
                         resources = ev_specs.get("resources", None)
                         (src, dst) = ev.get("targets")
                         ack = self.update_link(src, dst, online, resources)
-        return ack
+        return ack, err_msg
 
     def _create_network(self):
         self.net = Containernet(controller=Controller)

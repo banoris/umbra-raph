@@ -55,6 +55,8 @@ class Playground:
                         reply= self.update_cpu_limit(node_name, action_args)
                     elif action == "update_memory_limit":
                         reply= self.update_memory_limit(node_name, action_args)
+                    elif action == "update_link":
+                        reply= self.update_link(action_args)
                     else:
                         reply = {}
                 else:
@@ -147,6 +149,24 @@ class Playground:
         ok, err_msg = self.exp_topo.update_memory_limit(node_name,
             mem_limit, memswap_limit)
         logger.info("Updating mem limit of %s with %s", node_name, params)
+
+        # TODO: exception? error checking?
+        ack = {
+            'ok': str(ok),
+            'msg': {
+                'info': {},
+                'error': err_msg
+            }
+        }
+
+        return ack
+
+    def update_link(self, params):
+
+        # TODO: params = array of dicts = [{...}, {...}, ...]
+        events = params.get('events', [])
+        ok, err_msg = self.exp_topo.update(events)
+        logger.info("Updating link with events=%s", events)
 
         # TODO: exception? error checking?
         ack = {

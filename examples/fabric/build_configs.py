@@ -309,6 +309,62 @@ def build_simple_fabric_cfg():
             "repeat": 0
         },
     }
+
+    """
+    $ tc qdisc show dev s0-eth2
+    qdisc htb 5: root refcnt 2 r2q 10 default 1 direct_packets_stat 0 direct_qlen 1000
+    qdisc netem 10: parent 5:1 limit 1000 delay 4.0ms loss 10%
+
+    $ tc qdisc show dev s0-eth5
+    qdisc htb 5: root refcnt 2 r2q 10 default 1 direct_packets_stat 0 direct_qlen 1000
+    qdisc netem 10: parent 5:1 limit 1000 delay 4.0ms loss 10%
+    """
+    ev_update_link = {
+        "command": "environment_event",
+        "args": {
+            "action": "update_link",
+            "action_args": {
+                "events": [
+                    {
+                        "group": "links",
+                        "specs": {
+                            "action": "update",
+                            "online": True,
+                            "resources": {
+                                "bw": 3,
+                                "delay": "4ms",
+                                "loss": 10,
+                            }
+                        },
+                        # "targets": ("peer1.org1.example.com", "s0")
+                        "targets": ("s0", "peer1.org1.example.com")
+                    },
+                    {
+                        "group": "links",
+                        "specs": {
+                            "action": "update",
+                            "online": True,
+                            "resources": {
+                                "bw": 3,
+                                "delay": "4ms",
+                                "loss": 10,
+                            }
+                        },
+                        "targets": ("s0", "peer0.org3.example.com")
+                    },
+                ]
+            },
+            "node_name": "peer0.org3.example.com", # not used
+        },
+        "schedule": {
+            "from": 6,
+            "until": 0,
+            "duration": 0,
+            "interval": 0,
+            "repeat": 0
+        },
+    }
+
     scenario.add_event("0", "fabric", ev_info_channels)
     scenario.add_event("1", "fabric", ev_create_channel)
     # TODO: kill_container event, note that the first arg for add_event
@@ -317,6 +373,7 @@ def build_simple_fabric_cfg():
     scenario.add_event("4", "environment", ev_kill_container_peer0_org2)
     scenario.add_event("5", "environment", ev_mem_limit_peer1_org1)
     scenario.add_event("6", "environment", ev_cpu_limit_peer1_org2)
+    scenario.add_event("6", "environment", ev_update_link)
     """
     scenario.add_event("3", "fabric", ev_join_channel_org1)
     scenario.add_event("3", "fabric", ev_join_channel_org2)
