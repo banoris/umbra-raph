@@ -392,6 +392,37 @@ def build_simple_fabric_cfg():
         },
     }
 
+    ev_update_link_peer1_org1_uplink = {
+        "command": "environment_event",
+        "args": {
+            "action": "update_link",
+            "action_args": {
+                "events": [
+                    {
+                        "group": "links",
+                        "specs": {
+                            "action": "update",
+                            "online": True,
+                            "resources": {
+                                "bw": 1,
+                                "delay": "2ms",
+                                # "loss": None,
+                            }
+                        },
+                        "targets": ("s0", "peer1.org1.example.com")
+                    },
+                ]
+            },
+        },
+        "schedule": {
+            "from": 3,
+            "until": 0,
+            "duration": 0,
+            "interval": 0,
+            "repeat": 0
+        },
+    }
+
     scenario.add_event("0", "fabric", ev_info_channels)
     scenario.add_event("1", "fabric", ev_create_channel)
     # TODO: kill_container event, note that the first arg for add_event
@@ -402,22 +433,23 @@ def build_simple_fabric_cfg():
     scenario.add_event("0", "environment", ev_cpu_limit_peer1_org2)
     # scenario.add_event("6", "environment", ev_update_link)
     scenario.add_event("0", "environment", ev_update_link_peer1_org1_downlink)
+    # scenario.add_event("0", "environment", ev_update_link_peer1_org1_uplink)
 
-    # scenario.add_event("3", "fabric", ev_join_channel_org1)
-    # scenario.add_event("3", "fabric", ev_join_channel_org2)
-    # scenario.add_event("3", "fabric", ev_join_channel_org3)
-    # scenario.add_event("3", "fabric", ev_join_channel_org4)
-    # scenario.add_event("4", "fabric", ev_info_channel)
-    # scenario.add_event("5", "fabric", ev_info_channel_config)
-    # scenario.add_event("6", "fabric", ev_info_channels)
-    # scenario.add_event("7", "fabric", ev_info_network)
-    # scenario.add_event("8", "fabric", ev_chaincode_install_org1)
-    # scenario.add_event("8", "fabric", ev_chaincode_install_org2)
-    # scenario.add_event("10", "fabric", ev_chaincode_instantiate_org1)
-    # scenario.add_event("10", "fabric", ev_chaincode_instantiate_org2)
-    # scenario.add_event("20", "fabric", ev_chaincode_invoke_org1)
-    # scenario.add_event("30", "fabric", ev_chaincode_query_org1)
-    # scenario.add_event("32", "fabric", ev_chaincode_query_org2)
+    scenario.add_event("6", "fabric", ev_join_channel_org1)
+    scenario.add_event("6", "fabric", ev_join_channel_org2)
+    scenario.add_event("6", "fabric", ev_join_channel_org3)
+    scenario.add_event("6", "fabric", ev_join_channel_org4)
+    scenario.add_event("7", "fabric", ev_info_channel)
+    scenario.add_event("8", "fabric", ev_info_channel_config)
+    scenario.add_event("9", "fabric", ev_info_channels)
+    scenario.add_event("10", "fabric", ev_info_network)
+    scenario.add_event("11", "fabric", ev_chaincode_install_org1)
+    scenario.add_event("11", "fabric", ev_chaincode_install_org2)
+    scenario.add_event("13", "fabric", ev_chaincode_instantiate_org1)
+    scenario.add_event("13", "fabric", ev_chaincode_instantiate_org2)
+    scenario.add_event("23", "fabric", ev_chaincode_invoke_org1)
+    scenario.add_event("40", "fabric", ev_chaincode_query_org1)
+    scenario.add_event("43", "fabric", ev_chaincode_query_org2)
 
     # Save config file
     scenario.save()
