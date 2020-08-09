@@ -429,10 +429,10 @@ def build_simple_fabric_cfg():
     # is not used since we will be using Handler scheduler.py
     # scenario.add_event("3", "environment", ev_kill_container_peer0_org1)
     # scenario.add_event("4", "environment", ev_kill_container_peer0_org2)
-    scenario.add_event("0", "environment", ev_mem_limit_peer1_org1)
-    scenario.add_event("0", "environment", ev_cpu_limit_peer1_org2)
+    scenario.add_event("4", "environment", ev_mem_limit_peer1_org1)
+    scenario.add_event("4", "environment", ev_cpu_limit_peer1_org2)
     # scenario.add_event("6", "environment", ev_update_link)
-    scenario.add_event("0", "environment", ev_update_link_peer1_org1_downlink)
+    # scenario.add_event("0", "environment", ev_update_link_peer1_org1_downlink)
     # scenario.add_event("0", "environment", ev_update_link_peer1_org1_uplink)
 
     scenario.add_event("6", "fabric", ev_join_channel_org1)
@@ -447,9 +447,9 @@ def build_simple_fabric_cfg():
     scenario.add_event("11", "fabric", ev_chaincode_install_org2)
     scenario.add_event("13", "fabric", ev_chaincode_instantiate_org1)
     scenario.add_event("13", "fabric", ev_chaincode_instantiate_org2)
-    scenario.add_event("23", "fabric", ev_chaincode_invoke_org1)
-    scenario.add_event("40", "fabric", ev_chaincode_query_org1)
-    scenario.add_event("43", "fabric", ev_chaincode_query_org2)
+    # scenario.add_event("23", "fabric", ev_chaincode_invoke_org1)
+    # scenario.add_event("40", "fabric", ev_chaincode_query_org1)
+    # scenario.add_event("43", "fabric", ev_chaincode_query_org2)
 
     # Save config file
     scenario.save()

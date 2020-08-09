@@ -198,6 +198,7 @@ class Environment:
             
             if node_type == "container":
                 added_node = self._add_container(node)
+                added_node.cmd("iperf3 -s &")
                 self.nodes[node_id] = added_node
  
             else:

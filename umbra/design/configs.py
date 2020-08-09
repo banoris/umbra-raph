@@ -553,6 +553,7 @@ class FabricTopology(Topology):
         self._ca_ports = 7054
         self._peer_ports = 7000
         self._peer_subports = 51
+        self._iperf_port = 5201
         self._ip_network = ipaddress.IPv4Network("172.31.0.0/16")
         self._ip_network_assigned = []
         self._filepath_fabricbase = None
@@ -688,7 +689,8 @@ class FabricTopology(Topology):
             "org": org_name,
             "anchor": anchor,
             "port": self._peer_ports + self._peer_subports,
-            "ports": [self._peer_ports + self._peer_subports],
+            # FIXME: where to properly expose this iperf server port?
+            "ports": [self._peer_ports + self._peer_subports, self._iperf_port],
             "chaincode_port": self._peer_ports + self._peer_subports + 1,
             "image_tag": image_tag,
             "project_network": self.project_network,

@@ -105,7 +105,7 @@ upgradeDockerImages() {
         echo "========================================================="
         echo
         docker run -d --name $IMAGES hyperledger/fabric-$IMAGES:$TAG
-        docker exec $IMAGES bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping && apt clean'  
+        docker exec $IMAGES bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping iperf3 && apt clean'  
         docker commit $IMAGES hyperledger/fabric-$IMAGES:$TAG.1
         echo "-- Committed docker image: hyperledger/fabric-$IMAGES:$TAG.1 --"
         docker stop -t0 $IMAGES
@@ -117,7 +117,7 @@ upgradeDockerImages() {
     echo "========================================================="
     echo
     docker run -d --name fabric-orderer hyperledger/fabric-orderer:$TAG
-    docker exec fabric-orderer bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping && apt clean && rm -R /var/hyperledger/*'
+    docker exec fabric-orderer bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping iperf3 && apt clean && rm -R /var/hyperledger/*'
     docker commit fabric-orderer hyperledger/fabric-orderer:$TAG.1
     echo "-- Committed docker image: hyperledger/fabric-orderer:$TAG.1 --"
     docker stop -t0 fabric-orderer
@@ -129,7 +129,7 @@ upgradeDockerImages() {
     echo "========================================================="
     echo
     docker run -d --name fabric-ca hyperledger/fabric-ca:$TAG
-    docker exec fabric-ca bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping && apt clean'
+    docker exec fabric-ca bash -c 'apt update && apt install -y net-tools iproute2 inetutils-ping iperf3 && apt clean'
     docker commit fabric-ca hyperledger/fabric-ca:$TAG.1
     echo "-- Committed docker image: hyperledger/fabric-ca:$TAG.1 --"
     docker stop -t0 fabric-ca
