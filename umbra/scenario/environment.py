@@ -127,6 +127,7 @@ class Environment:
         
     def update(self, events):
         ack = False
+        err_msg = None
 
         if self.net:
             logger.info("Updating network: %r" % self.net)
@@ -144,7 +145,7 @@ class Environment:
                         resources = ev_specs.get("resources", None)
                         (src, dst) = ev.get("targets")
                         ack = self.update_link(src, dst, online, resources)
-        return ack
+        return ack, err_msg
 
     def _create_network(self):
         self.net = Containernet(controller=Controller)
@@ -197,6 +198,7 @@ class Environment:
             
             if node_type == "container":
                 added_node = self._add_container(node)
+                added_node.cmd("iperf3 -s &")
                 self.nodes[node_id] = added_node
  
             else:
@@ -361,6 +363,7 @@ class Environment:
 
         try:
             self.nodes[node_name].terminate()
+            # TODO: remove self.nodes[node_name]? Can it be restarted back with addDocker?
         except:
             ok = False
             err_msg = f'Failed to kill {node_name}'

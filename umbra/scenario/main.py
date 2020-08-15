@@ -46,15 +46,17 @@ class Playground:
                     reply = self.stop()
                 elif cmd == "environment_event":
                     node_name = scenario.get('node_name', None)
-                    event = scenario.get('event', None)
-                    params = scenario.get('params', None)
+                    action = scenario.get('action', None)
+                    action_args = scenario.get('action_args', None)
 
-                    if event == "kill_container":
+                    if action == "kill_container":
                         reply = self.kill_container(node_name)
-                    elif event == "update_cpu_limit":
-                        reply= self.update_cpu_limit(node_name, params)
-                    elif event == "update_memory_limit":
-                        reply= self.update_memory_limit(node_name, params)
+                    elif action == "update_cpu_limit":
+                        reply= self.update_cpu_limit(node_name, action_args)
+                    elif action == "update_memory_limit":
+                        reply= self.update_memory_limit(node_name, action_args)
+                    elif action == "update_link":
+                        reply= self.update_link(action_args)
                     else:
                         reply = {}
                 else:
@@ -159,6 +161,24 @@ class Playground:
 
         return ack
 
+    def update_link(self, params):
+
+        # TODO: params = array of dicts = [{...}, {...}, ...]
+        events = params.get('events', [])
+        ok, err_msg = self.exp_topo.update(events)
+        logger.info("Updating link with events=%s", events)
+
+        # TODO: exception? error checking?
+        ack = {
+            'ok': str(ok),
+            'msg': {
+                'info': {},
+                'error': err_msg
+            }
+        }
+
+        return ack
+
     def clear(self):
         exp = Environment({})
         exp.mn_cleanup()
@@ -212,6 +232,8 @@ class Scenario(ScenarioBase):
         elif command == "stop":
             reply = await self.call(command, scenario)
             self.stop()
+        # TODO: this env_event contains many types of events, eg. kill_container, cpu/mem limit
+        # Should you just add all of it here or unpack inside Playground:loop ?
         elif command == "environment_event":
             reply = await self.call(command, scenario)
         else:

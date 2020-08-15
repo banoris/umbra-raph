@@ -107,6 +107,14 @@ done
 
 case "$COMMAND" in
     start)
+        if [ -f "./.run.sh.lock" ]; then
+            echo_bold ".run.sh.lock file exist. Did you forget to stop?"
+            echo_bold "$ sudo -H ./run.sh stop"
+            exit 1
+        fi
+
+        echo $(date) > ./.run.sh.lock
+
         if [ -z "${CONFIG_SOURCE}" ]; then
             echo_bold "Please, specify a config source path"
             exit 1
@@ -161,6 +169,7 @@ case "$COMMAND" in
         echo_bold "-> Removing docker network: umbra"
         docker network rm umbra
 
+        rm ./.run.sh.lock
         exit 0
         ;;
     *)

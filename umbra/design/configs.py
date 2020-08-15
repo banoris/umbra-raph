@@ -553,6 +553,7 @@ class FabricTopology(Topology):
         self._ca_ports = 7054
         self._peer_ports = 7000
         self._peer_subports = 51
+        self._iperf_port = 5201
         self._ip_network = ipaddress.IPv4Network("172.31.0.0/16")
         self._ip_network_assigned = []
         self._filepath_fabricbase = None
@@ -688,7 +689,8 @@ class FabricTopology(Topology):
             "org": org_name,
             "anchor": anchor,
             "port": self._peer_ports + self._peer_subports,
-            "ports": [self._peer_ports + self._peer_subports],
+            # FIXME: where to properly expose this iperf server port?
+            "ports": [self._peer_ports + self._peer_subports, self._iperf_port],
             "chaincode_port": self._peer_ports + self._peer_subports + 1,
             "image_tag": image_tag,
             "project_network": self.project_network,
@@ -1424,6 +1426,19 @@ class Events:
         self._ids = 1
         self._events = {}
 
+    # TODO: common/scheduler.py expects this structure:
+    """
+        'schedule': {
+            "from": 0,
+            "until": 14,
+            "duration": 0,
+            "interval": 2,
+            "repeat": 2
+        },
+    """
+    # Think how to make FabricEvent which uses below format (legacy?)
+    # compared to EnvironmentEvent which uses the newer scheduler.py
+    # as task scheduling
     def add(self, when, category, params):
         ev_id = self._ids
         event = {
@@ -1457,7 +1472,9 @@ class Scenario:
             self.topology = topo
             self.events.parse(data.get("events", {}))
             self.name = data.get("id", None)
-            self.author = data.get("entrypoint", None)
+            # TODO:FIXME: self.author??? typo? Issue #5
+            # self.author = data.get("entrypoint", None)
+            self.entrypoint = data.get("entrypoint", None)
             return True
         return False
 
