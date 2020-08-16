@@ -198,7 +198,7 @@ class Environment:
             
             if node_type == "container":
                 added_node = self._add_container(node)
-                added_node.cmd("iperf3 -s &")
+                # added_node.cmd("iperf3 -s &")
                 self.nodes[node_id] = added_node
  
             else:
@@ -249,6 +249,8 @@ class Environment:
                 logger.info("Link adding src %s - intf_src %s, dst %s, intf_dst %s, params_src %s, params_dst %s, resources %s", 
                             src, intf_src, dst, intf_dst, params_src, params_dst, link_resources)
                 
+                logger.info(f"src_node={src_node}, dst_node={dst_node}")
+
                 link_stats = self.net.addLink(src_node, dst_node,
                                                 intfName1=intf_src, intfName2=intf_dst,
                                                 params1=params_src, params2=params_dst,
