@@ -1,6 +1,7 @@
 import logging
 import asyncio
-import signal 
+import signal
+import time
 from urllib.parse import urlparse
 
 from grpclib.utils import graceful_exit
@@ -29,9 +30,22 @@ class App:
         host, port = address.split(":")
         logger.debug(f'Starting server on host {host} : port {port}')    
         
+        success = False
+        retries = 1
         with graceful_exit([server]):
-            await server.start(host, port)
-            print(f'Serving on {host}:{port}')
+            while not success:
+                try:
+                    await server.start(host, port)
+                    success = True
+                    logger.info(f"Serving on {host}:{port}")
+                except Exception as e:
+                    logger.info("Failed to bind to %s:%s, error = %s. Retrying... %d",
+                                host, port, e, retries)
+                    time.sleep(2)
+                    retries += 1
+                    if retries == 5:
+                        logger.info(f"Failed after {retries} times, TERMINATE")
+                        break
             await server.wait_closed()
 
     def init(self, app_cls):
