@@ -44,10 +44,6 @@ def build_simple_fabric_cfg():
     
     fab_topo.add_org("org4", domain, policies=org4_policy)
     fab_topo.add_peer("peer0", "org4", anchor=True, image_tag=image_tag)  
-    # fab_topo.add_peer("peer1", "org4", anchor=True, image_tag=image_tag)
-
-    agent_image = "umbra-agent"
-    fab_topo.add_agent("umbra-agent", domain, image=agent_image)
 
     ord_specs = [
         {"Hostname": "orderer"},
@@ -83,7 +79,6 @@ def build_simple_fabric_cfg():
     fab_topo.add_org_network_link("org3", "s0", "E-Line")
     fab_topo.add_org_network_link("org4", "s0", "E-Line")
     fab_topo.add_org_network_link("orderer", "s0", "E-Line")
-    fab_topo.add_org_network_link("umbra-agent", "s0", "E-Line")
 
     # Defines resources for nodes and links
     node_resources = fab_topo.create_node_profile(cpus=1, memory=512, disk=None)
@@ -93,8 +88,7 @@ def build_simple_fabric_cfg():
     fab_topo.add_link_profile(link_resources, link_type="E-Line")
     
     # topo_built = fab_topo.build()
-    # print("topo_built =", topo_built)
-    # print("fab_topo.show()")
+    # print(topo_built)
     # fab_topo.show()
   
     ev_create_channel = {
@@ -441,26 +435,24 @@ def build_simple_fabric_cfg():
     # scenario.add_event("0", "environment", ev_update_link_peer1_org1_downlink)
     # scenario.add_event("0", "environment", ev_update_link_peer1_org1_uplink)
 
-    # scenario.add_event("6", "fabric", ev_join_channel_org1)
-    # scenario.add_event("6", "fabric", ev_join_channel_org2)
-    # scenario.add_event("6", "fabric", ev_join_channel_org3)
-    # scenario.add_event("6", "fabric", ev_join_channel_org4)
-    # scenario.add_event("7", "fabric", ev_info_channel)
-    # scenario.add_event("8", "fabric", ev_info_channel_config)
-    # scenario.add_event("9", "fabric", ev_info_channels)
-    # scenario.add_event("10", "fabric", ev_info_network)
-    # scenario.add_event("11", "fabric", ev_chaincode_install_org1)
-    # scenario.add_event("11", "fabric", ev_chaincode_install_org2)
-    # scenario.add_event("13", "fabric", ev_chaincode_instantiate_org1)
-    # scenario.add_event("13", "fabric", ev_chaincode_instantiate_org2)
+    scenario.add_event("6", "fabric", ev_join_channel_org1)
+    scenario.add_event("6", "fabric", ev_join_channel_org2)
+    scenario.add_event("6", "fabric", ev_join_channel_org3)
+    scenario.add_event("6", "fabric", ev_join_channel_org4)
+    scenario.add_event("7", "fabric", ev_info_channel)
+    scenario.add_event("8", "fabric", ev_info_channel_config)
+    scenario.add_event("9", "fabric", ev_info_channels)
+    scenario.add_event("10", "fabric", ev_info_network)
+    scenario.add_event("11", "fabric", ev_chaincode_install_org1)
+    scenario.add_event("11", "fabric", ev_chaincode_install_org2)
+    scenario.add_event("13", "fabric", ev_chaincode_instantiate_org1)
+    scenario.add_event("13", "fabric", ev_chaincode_instantiate_org2)
     # scenario.add_event("23", "fabric", ev_chaincode_invoke_org1)
     # scenario.add_event("40", "fabric", ev_chaincode_query_org1)
     # scenario.add_event("43", "fabric", ev_chaincode_query_org2)
 
     # Save config file
     scenario.save()
-    print("fab_topo.show()")
-    fab_topo.show()
 
 def builds():
     build_simple_fabric_cfg()
@@ -474,7 +466,7 @@ def setup_logging(log_level=logging.DEBUG):
     datefmt = '%Y-%m-%d %H:%M:%S'
 
     try:
-        from colorlog import ColoredFormatterASD
+        from colorlog import ColoredFormatter
         logging.getLogger().handlers[0].setFormatter(ColoredFormatter(
             colorfmt,
             datefmt=datefmt,

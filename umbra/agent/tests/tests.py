@@ -129,7 +129,7 @@ class TestAgent(unittest.TestCase):
                 "actions": actions,
             }
 
-            channel = Channel("172.17.0.2", 8910)
+            channel = Channel("172.17.0.1", 8910)
             stub = AgentStub(channel)
 
             instruction = json_format.ParseDict(inst_dict, Instruction())

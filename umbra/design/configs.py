@@ -370,14 +370,13 @@ class Topology(Graph):
         return self.profile
 
     def show(self):
-        print("*** Dumping network graph ***")
-        print("nodes:")
+        print("nodes")
         for n, data in self.graph.nodes(data=True):
-            print("  node =", n, ", data =", data)
+            print("node", n, "data", data)
 
-        print("links:")
+        print("links")
         for src, dst, data in self.graph.edges(data=True):
-            print("  src =", src, ", dst =", dst, ", data =", data)
+            print("src", src, "dst", dst, "data", data)
         
     def build(self):
         nodes = []
@@ -398,8 +397,6 @@ class Topology(Graph):
                 link.update(resources)
             links.append(link)
 
-        # TODO: umbra-agent node missing
-        logger.info(f"builddd: nodes={nodes}")
         self.topo = {
             "nodes": nodes,
             "links": links,
@@ -550,7 +547,6 @@ class FabricTopology(Topology):
         self.network_mode = "umbra"
         self.orgs = {}
         self.orderers = {}
-        self.agent = {}
         self._config_tx = {}
         self._configtx_fill = {}
         self._networks = {}
@@ -654,34 +650,6 @@ class FabricTopology(Topology):
             logger.info("Orderer registered %s - %s", name, domain)
         else:
             logger.info("Orderer already exists %s", name)
-
-    def add_agent(self, name, domain, image="umbra-agent", **kwargs):
-        """
-        Add umbra-agent to the topology
-
-        NOTE:2020-08-14: only single agent is supported thus far. So, calling
-        this API multiple times to add multiple agents likely won't work
-        """
-        agent = {
-            "name": name,
-            "domain": domain,
-            "agent_fqdn": name + "." + domain,
-            "ports":[8910], # HARDCODE?
-            "org": None,
-            "image": image,
-            "image_tag": "1.0",
-            "intf": 1,
-            "env": ["AGENT_PORT=8910"], # HARDCODE?
-            "ips": {},
-        }
-        agent.update(kwargs)
-
-        if name not in self.agent:
-            self.agent[name] = agent
-            logger.info("umbra-agent registered %s - %s", name, domain)
-        else:
-            logger.info("umbra-agent already exist, name =", name)
-
 
     def add_ca(self, name, org_name, domain, ca_admin, ca_admin_pw, image_tag="1.4.0"):
         CA = {
@@ -805,21 +773,6 @@ class FabricTopology(Topology):
             orderer_kwargs = self._parse_orderer_template(orderer)
             self.add_node(orderer.get("orderer_fqdn"), "container", **orderer_kwargs)
 
-    def _build_agent(self):
-        for agent in self.agent.values():
-            agent_kwargs = {
-                "image": agent.get("image") + ":" + agent.get("image_tag"),
-                # "env": ["AGENT_PORT=8910"],
-                "env": agent.get("env"),
-                "volumes": [],
-                "port_bindings": {},
-                "ports": agent.get("ports"),
-                "working_dir": "",
-                "network_mode": self.network_mode,
-                "command": "",
-            }
-            self.add_node(agent.get("agent_fqdn"), "container", **agent_kwargs)
-
     def _peer_format_fields_list(self, info, fields):
         fields_frmt = []
         for field in fields:
@@ -894,14 +847,12 @@ class FabricTopology(Topology):
     def _build_network(self): 
         #TODO: check links and set switches stp if needed (remember wait time - convergence)
         # e.g., https://gist.github.com/lantz/7853026
-        logger.info(f"self._networks={self._networks}")
+
         for net_name,net in self._networks.items():
             self.add_node(net_name, "switch")
             links = net.get("links")
-            logger.info(f"links={links}")
 
             for org_name in links:
-                logger.info(f"org_name={org_name}")
                 link_type = links[org_name].get("link")                
                 if org_name in self.orgs:
                     org = self.orgs[org_name]
@@ -941,7 +892,6 @@ class FabricTopology(Topology):
                     intf = orderer.get("intf")
                     intf_name = "eth"+str(intf)
                     intf_ip = self.get_network_ip()
-                    logger.info(f"orderer.intf_ip={intf_ip}")
                     self.add_link_nodes(orderer_fqdn, net_name, link_type,
                                         params_src={"id": intf_name,
                                                     "interface": "ipv4",
@@ -949,28 +899,8 @@ class FabricTopology(Topology):
                     
                     orderer["intf"] += 1
                     orderer["ips"][intf_name] = intf_ip.split('/')[0]
-
-                # TODO: add your umbra-agent node
-                if org_name in self.agent:
-                    agent = self.agent[org_name]
-                    agent_fqdn = agent.get("agent_fqdn")
-                    intf = agent.get("intf")
-                    intf_name = "eth"+str(intf)
-                    intf_ip = self.get_network_ip()
-                    self.add_link_nodes(agent_fqdn, net_name, link_type,
-                                        params_src={"id": intf_name,
-                                                    "interface": "ipv4",
-                                                    "ip": intf_ip}
-                                        )
-                    logger.info(f"agent.intf_ip={intf_ip}")
-                    agent["intf"] += 1
-                    agent["ips"][intf_name] = intf_ip.split('/')[0]
-                    # TODO: need this env as arg to umbra/agent/umbra-agent executable
-                    self.agent[org_name]["env"].append(f"AGENT_ADDR={intf_ip.split('/')[0]}")
-                    # self.agent[org_name]["env"].append(f"AGENT_ADDR=172.17.0.2")
-
+    
     def _build_network_dns(self):
-        logger.info("_build_network_dns")
         dns_names = {}
         dns_nodes = []
 
@@ -1007,27 +937,14 @@ class FabricTopology(Topology):
                     for ip in orderer_ips.values():
                         dns_names[orderer_fqdn] = ip
 
-                if org_name in self.agent:
-                    agent = self.agent[org_name]
-                    agent_fqdn = agent.get("agent_fqdn")
-                    agent_ips = agent.get("ips")
-                    dns_nodes.append(agent_fqdn)
-
-                    for ip in agent_ips.values():
-                        dns_names[agent_fqdn] = ip
-
-        logger.info(f"dns_nodes={dns_nodes}")
-        logger.info(f"graph.nodes={self.graph.nodes}")
         for n, data in self.graph.nodes(data=True):
             if n in dns_nodes:
-                logger.info(f"n={n}")
                 data['extra_hosts'] = dns_names
 
     def dump(self, topo):
         fabric_cfgs = {
             'orgs': self.orgs,
-            'orderers': self.orderers,
-            'umbra-agents': self.agent
+            'orderers': self.orderers
         }
 
         info = {
@@ -1043,9 +960,7 @@ class FabricTopology(Topology):
         self._build_peers()
         self._build_CAs()
         self._build_orderers()
-        self._build_agent()
         self._build_network()
-        logger.info(f"FabricTopology.build")
         self._build_network_dns()
         topo_built = Topology.build(self)
         self.dump(topo_built)
@@ -1573,7 +1488,6 @@ class Scenario:
         return self.topology
 
     def dump(self):
-        logger.info(f"Scenario.dump")
         topo_built = self.topology.build()
         events_built = self.events.build()
         scenario = {
@@ -1585,7 +1499,6 @@ class Scenario:
         return scenario
 
     def save(self):
-        logger.info(f"Scenario.save")
         data = self.dump()
         filename =  self.id + ".json"
 
