@@ -47,7 +47,7 @@ setup(
       'PyYAML>=5.1.2',
       'networkx>=2.4',
       'psutil>=5.6.7',
-      'docker>=4.1.0',
+      'docker<=4.1.0',
     ],
     python_requires=">=3.7",
     setup_requires=["setuptools>=41.1.0"],

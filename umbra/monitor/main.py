@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class Monitor(MonitorBase):
-    def __init__(self):
+    def __init__(self, info):
         self.tools = Tools()
 
     async def Listen(self, stream):

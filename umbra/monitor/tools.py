@@ -523,13 +523,11 @@ class MonContainer(Tool):
 
     def _stats(self, name=None):
         summary_stats = {}
-        
         container = self._dc.containers.get(name)
         if container:
             stats = container.stats(stream=False)
         else:
             return summary_stats
-        
         stats_cpu = self._stats_cpu(stats)
         summary_stats.update(stats_cpu)
         stats_mem = self._stats_mem(stats)
@@ -889,7 +887,7 @@ class Tools:
                 tool_cls = self.toolset[tool_name]
                 tool = tool_cls()                             
                 tool.init(action)
-                action_call = tool.call()
+                action_call = tool.call
                 
                 calls[action_id] = (action_call, action_sched)
 
@@ -934,5 +932,5 @@ class Tools:
             "id": instruction.get('id'),
             "evaluations": evals,
         }
-        logger.debug(f"{snap}")
+        logger.info(f"snap = {snap}")
         return snap

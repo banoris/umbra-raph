@@ -474,7 +474,7 @@ def setup_logging(log_level=logging.DEBUG):
     datefmt = '%Y-%m-%d %H:%M:%S'
 
     try:
-        from colorlog import ColoredFormatterASD
+        # from colorlog import ColoredFormatter
         logging.getLogger().handlers[0].setFormatter(ColoredFormatter(
             colorfmt,
             datefmt=datefmt,
