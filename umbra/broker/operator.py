@@ -119,6 +119,9 @@ class Operator:
         topo.fill_config(info_topology)
         topo.fill_hosts_config(info_hosts)
         self.topology = topo
+        logger.info("self.topology.show()")
+        self.topology.show()
+        logger.info(f"number_of_edges={self.topology.graph.number_of_edges()}")
         self.config_plugins()
 
         events = scenario.get("events")
@@ -155,6 +158,8 @@ class Operator:
             address = scenario.get("entrypoint")
             # NOTE: takes about 1.5mins to deploy topology
             ack,topo_info = await self.call_scenario(request.id, "start", topology, address)
+            logger.info(f"topo_info={topo_info}")
+            logger.info(f"scenario={scenario}")
 
             if ack:
                 events_info = await self.call_events(scenario, topo_info)

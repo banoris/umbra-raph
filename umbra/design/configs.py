@@ -370,14 +370,14 @@ class Topology(Graph):
         return self.profile
 
     def show(self):
-        print("*** Dumping network graph ***")
-        print("nodes:")
+        logger.info("*** Dumping network graph ***")
+        logger.info("nodes:")
         for n, data in self.graph.nodes(data=True):
-            print("  node =", n, ", data =", data)
+            logger.info(f"  node = {n}, data = {data}")
 
-        print("links:")
+        logger.info("links:")
         for src, dst, data in self.graph.edges(data=True):
-            print("  src =", src, ", dst =", dst, ", data =", data)
+            logger.info(f"  src = {src}, dst = {dst}, data = {data}", data)
         
     def build(self):
         nodes = []
@@ -442,8 +442,12 @@ class Topology(Graph):
             else:
                 logger.debug("unknown node %s", n)
 
+        logger.info(f"ASD: self.graph.edges()={self.graph.edges()}")
+
         for link in links.values():
             src, dst = link.get("src"), link.get("dst")
+            logger.info(f"ASD: src={src}, dst={dst}")
+
             if (src, dst) in self.graph.edges():
                 data = self.graph.get_edge_data(src, dst, 0)
                 data["deploy"] = link
