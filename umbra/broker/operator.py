@@ -29,6 +29,7 @@ class Operator:
         self.events_env = EnvEventHandler()
         # TODO: add new plugin called "environment"
         self.plugins = {}
+        self.agent_plugin = {}
 
     def parse_bytes(self, msg):
         msg_dict = {}
@@ -47,6 +48,35 @@ class Operator:
             msg_bytes = msg_str.encode('utf32')
             
         return msg_bytes
+
+    def configure_agent(self, scenario):
+        """
+        Parse 'scenario' dictionary to get agent's IP:PORT
+        and then populate to self.agent_plugin
+        """
+        umbra_topo = scenario.get("umbra").get("topology")
+        agents = umbra_topo.get("agents")
+
+        for agent_name, agent_val in agents.items():
+            env_vars = agent_val.get("env")
+            agent_ip = None
+            agent_port = None
+            self.agent_plugin[agent_name] = {"agent_ip": agent_ip,
+                                             "agent_port": agent_port}
+            for env_var in env_vars:
+                env_name, env_value = env_var.split('=')
+                if env_name == "AGENT_ADDR":
+                    agent_ip = env_value
+                    self.agent_plugin[agent_name]["agent_ip"] = agent_ip
+                elif env_name == "AGENT_PORT":
+                    agent_port = env_value
+                    self.agent_plugin[agent_name]["agent_port"] = agent_port
+                else:
+                    logger.error("Error configuring agent=%s, env_name=%s, env_value=%s",
+                                    agent_name, env_name, env_value)
+
+            logger.info(f"Added agent: agent_name = {agent_name}, at {agent_ip}:{agent_port}")
+
 
     async def call_scenario(self, test, command, topology, address):
         logger.info(f"Deploying Scenario - {command}")
@@ -119,6 +149,7 @@ class Operator:
         topo.fill_config(info_topology)
         topo.fill_hosts_config(info_hosts)
         self.topology = topo
+        self.topology.show() # TODO: remove
         self.config_plugins()
 
         events = scenario.get("events")
@@ -150,11 +181,15 @@ class Operator:
         # logger.debug(f"Received scenario: {request_scenario}")       
         scenario = self.parse_bytes(request_scenario)
 
+
         if scenario:
             topology = scenario.get("topology")
             address = scenario.get("entrypoint")
+            self.configure_agent(topology)
             # NOTE: takes about 1.5mins to deploy topology
             ack,topo_info = await self.call_scenario(request.id, "start", topology, address)
+            logger.info(f"topo_info={topo_info}")
+            logger.info(f"scenario={scenario}")
 
             if ack:
                 events_info = await self.call_events(scenario, topo_info)

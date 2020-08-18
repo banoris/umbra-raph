@@ -144,7 +144,7 @@ case "$COMMAND" in
         echo "Running config ${CONFIG_SOURCE}"
         echo "########################################"
 
-        sleep 8
+        sleep 6
         examples="/usr/bin/python3.7 ./examples.py --config ${CONFIG_SOURCE}"
         nohup ${examples} > logs/examples.log 2>&1 &
         examplesPID=$!

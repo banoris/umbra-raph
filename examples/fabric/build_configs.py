@@ -47,7 +47,7 @@ def build_simple_fabric_cfg():
     # fab_topo.add_peer("peer1", "org4", anchor=True, image_tag=image_tag)
 
     agent_image = "umbra-agent"
-    fab_topo.add_agent("umbra-agent", domain, image=agent_image)
+    fab_topo.add_agent("umbraagent", domain, image=agent_image)
 
     ord_specs = [
         {"Hostname": "orderer"},
@@ -83,7 +83,7 @@ def build_simple_fabric_cfg():
     fab_topo.add_org_network_link("org3", "s0", "E-Line")
     fab_topo.add_org_network_link("org4", "s0", "E-Line")
     fab_topo.add_org_network_link("orderer", "s0", "E-Line")
-    fab_topo.add_org_network_link("umbra-agent", "s0", "E-Line")
+    fab_topo.add_org_network_link("umbraagent", "s0", "E-Line")
 
     # Defines resources for nodes and links
     node_resources = fab_topo.create_node_profile(cpus=1, memory=512, disk=None)
@@ -429,24 +429,49 @@ def build_simple_fabric_cfg():
         },
     }
 
+    ev_agent = [
+                {
+                    'id': "1",
+                    "tool": "ping",
+                    "output": {
+                        "live": False,
+                        "address": None,
+                    },
+                    'parameters': {
+                        "target": "peer0.org1.example.com",
+                        "interval": "1",
+                        "duration": "4",
+                    },
+                    'schedule': {
+                        "from": 1,
+                        "until": 0,
+                        "duration": 0,
+                        "interval": 0,
+                        "repeat": 0
+                    },
+                },
+    ]
+
+
     scenario.add_event("0", "fabric", ev_info_channels)
     scenario.add_event("1", "fabric", ev_create_channel)
     # TODO: kill_container event, note that the first arg for add_event
     # is not used since we will be using Handler scheduler.py
     # scenario.add_event("3", "environment", ev_kill_container_peer0_org1)
     # scenario.add_event("4", "environment", ev_kill_container_peer0_org2)
-    scenario.add_event("4", "environment", ev_mem_limit_peer1_org1)
-    scenario.add_event("4", "environment", ev_cpu_limit_peer1_org2)
     # scenario.add_event("6", "environment", ev_update_link)
     # scenario.add_event("0", "environment", ev_update_link_peer1_org1_downlink)
     # scenario.add_event("0", "environment", ev_update_link_peer1_org1_uplink)
+    scenario.add_event("2", "environment", ev_mem_limit_peer1_org1)
+    scenario.add_event("2", "environment", ev_cpu_limit_peer1_org2)
 
-    # scenario.add_event("6", "fabric", ev_join_channel_org1)
-    # scenario.add_event("6", "fabric", ev_join_channel_org2)
-    # scenario.add_event("6", "fabric", ev_join_channel_org3)
-    # scenario.add_event("6", "fabric", ev_join_channel_org4)
-    # scenario.add_event("7", "fabric", ev_info_channel)
-    # scenario.add_event("8", "fabric", ev_info_channel_config)
+    scenario.add_event("3", "fabric", ev_join_channel_org1)
+    scenario.add_event("3", "fabric", ev_join_channel_org2)
+    scenario.add_event("3", "fabric", ev_join_channel_org3)
+    scenario.add_event("3", "fabric", ev_join_channel_org4)
+    scenario.add_event("5", "fabric", ev_info_channel)
+    scenario.add_event("5", "fabric", ev_info_channel_config)
+
     # scenario.add_event("9", "fabric", ev_info_channels)
     # scenario.add_event("10", "fabric", ev_info_network)
     # scenario.add_event("11", "fabric", ev_chaincode_install_org1)
@@ -474,7 +499,7 @@ def setup_logging(log_level=logging.DEBUG):
     datefmt = '%Y-%m-%d %H:%M:%S'
 
     try:
-        # from colorlog import ColoredFormatter
+        from colorlog import ColoredFormatter
         logging.getLogger().handlers[0].setFormatter(ColoredFormatter(
             colorfmt,
             datefmt=datefmt,

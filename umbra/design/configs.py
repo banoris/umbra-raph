@@ -398,7 +398,7 @@ class Topology(Graph):
                 link.update(resources)
             links.append(link)
 
-        # TODO: umbra-agent node missing
+        # TODO: umbraagent node missing
         logger.info(f"builddd: nodes={nodes}")
         self.topo = {
             "nodes": nodes,
@@ -657,7 +657,7 @@ class FabricTopology(Topology):
 
     def add_agent(self, name, domain, image="umbra-agent", **kwargs):
         """
-        Add umbra-agent to the topology
+        Add umbraagent to the topology
 
         NOTE:2020-08-14: only single agent is supported thus far. So, calling
         this API multiple times to add multiple agents likely won't work
@@ -678,9 +678,9 @@ class FabricTopology(Topology):
 
         if name not in self.agent:
             self.agent[name] = agent
-            logger.info("umbra-agent registered %s - %s", name, domain)
+            logger.info("umbraagent registered %s - %s", name, agent['agent_fqdn'])
         else:
-            logger.info("umbra-agent already exist, name =", name)
+            logger.info("umbraagent already exist, name =", name)
 
 
     def add_ca(self, name, org_name, domain, ca_admin, ca_admin_pw, image_tag="1.4.0"):
@@ -950,7 +950,7 @@ class FabricTopology(Topology):
                     orderer["intf"] += 1
                     orderer["ips"][intf_name] = intf_ip.split('/')[0]
 
-                # TODO: add your umbra-agent node
+                # TODO: add your umbraagent node
                 if org_name in self.agent:
                     agent = self.agent[org_name]
                     agent_fqdn = agent.get("agent_fqdn")
@@ -966,7 +966,7 @@ class FabricTopology(Topology):
                     agent["intf"] += 1
                     ip_addr = intf_ip.split('/')[0]
                     agent["ips"][intf_name] = ip_addr
-                    # TODO: need this env as arg to umbra/agent/umbra-agent executable
+                    # TODO: need this env as arg to umbra/agent/umbraagent executable
                     self.agent[org_name]["env"].append(f"AGENT_ADDR={ip_addr}")
                     # self.agent[org_name]["env"].append(f"AGENT_ADDR=172.17.0.2")
 
@@ -1028,7 +1028,7 @@ class FabricTopology(Topology):
         fabric_cfgs = {
             'orgs': self.orgs,
             'orderers': self.orderers,
-            'umbra-agents': self.agent
+            'agents': self.agent
         }
 
         info = {
