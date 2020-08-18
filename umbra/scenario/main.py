@@ -15,6 +15,7 @@ from umbra.scenario.environment import Environment
 
 
 logger = logging.getLogger(__name__)
+logging.getLogger("hpack").setLevel(logging.WARNING)
 
 
 class Playground:

@@ -11,6 +11,7 @@ from umbra.agent.tools import Tools
 
 
 logger = logging.getLogger(__name__)
+logging.getLogger("hpack").setLevel(logging.WARNING)
 
 
 class Agent(AgentBase):
