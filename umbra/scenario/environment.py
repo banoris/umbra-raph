@@ -100,7 +100,7 @@ class Environment:
         self.switches = {}
         self.nodes_info = {}
         logger.debug("Environment Instance Created")
-        logger.debug(f"{json.dumps(self.topo, indent=4)}")
+        # logger.debug(f"{json.dumps(self.topo, indent=4)}")
 
     def update_link_resources(self, src, dst, resources):
         src = self.net.get(src)
