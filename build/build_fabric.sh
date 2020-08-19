@@ -142,9 +142,23 @@ upgradeDockerImages() {
   fi
 }
 
+configure_umbra_agent_image() {
+  echo "========================================================="
+  echo "Setting up umbra-agent Docker image"
+  echo "========================================================="
+
+  cd ..
+  docker build -t umbra-agent:1.0 -f Dockerfile-umbra-agent  .
+
+  echo "========================================================="
+  echo "Completed umbra-agent Docker build"
+  echo "========================================================="
+}
+
 requirementsFabric
 dockerImages
 upgradeDockerImages ${FABRIC_TAG}
+configure_umbra_agent_image
 
 echo "========================================================="
 echo "Adds configtxgen and cryptogen to PATH env"
