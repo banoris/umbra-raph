@@ -9,8 +9,8 @@ from grpclib.exceptions import GRPCError
 
 from google.protobuf import json_format
 
-from umbra.common.protobuf.umbra_grpc import ScenarioStub
-from umbra.common.protobuf.umbra_pb2 import Report, Workflow
+from umbra.common.protobuf.umbra_grpc import ScenarioStub, AgentStub
+from umbra.common.protobuf.umbra_pb2 import Report, Workflow, Instruction, Snapshot
 
 from umbra.design.configs import Topology, Scenario
 from umbra.broker.plugins.fabric import FabricEvents
@@ -19,7 +19,7 @@ from umbra.broker.plugins.env import EnvEventHandler
 logger = logging.getLogger(__name__)
 
 # port that umbra-agent binds to
-AGENT_PORT = "8910"
+AGENT_PORT = 8910
 
 class Operator:
     def __init__(self, info):
@@ -73,10 +73,9 @@ class Operator:
 
             if subdomain in agents.keys():
                 agent_ip = host_val.get("host_ip")
-                self.agent_plugin[subdomain] = {"agent_ip": agent_ip,
-                                                "agent_port": AGENT_PORT}
+                self.agent_plugin[subdomain] = agent_ip + ":" + str(AGENT_PORT)
                 logger.info("Added agent: agent_name = %s, at %s:%s",
-                    subdomain, agent_ip, AGENT_PORT)
+                            subdomain, agent_ip, AGENT_PORT)
 
     async def call_scenario(self, test, command, topology, address):
         logger.info(f"Deploying Scenario - {command}")
@@ -169,8 +168,60 @@ class Operator:
         events = scenario.get("events")
         # filter out non "environment" type events
         env_events = {key: value for key, value in events.items()
-                            if value['category'] == "environment"}
+                        if value['category'] == "environment"}
         await self.events_env.handle(env_events)
+
+    async def call_agent_event(self, scenario):
+        events = scenario.get("events")
+
+
+        # TODO: redo `class Events` data model so you don't need to do all
+        # these nasty parsing :(
+
+        # filter out non-"agent" type events
+        # agent_params = {key: value for key, value in events.items()
+        #                 if value['category'] == "agent"}
+
+        # logger.info(f"agent_params={agent_params}")
+        # agent_events = agent_params.values().get("params")
+        # logger.info(f"agent_events={agent_events}")
+
+        # agent_name = agent_events.get("agent_name")
+
+        agent_events = {
+            "id": "100",
+            "actions": [
+                {
+                    'id': "1",
+                    "tool": "ping",
+                    "output": {
+                        "live": False,
+                        "address": None,
+                    },
+                    'parameters': {
+                        "target": "peer0.org1.example.com",
+                        "interval": "1",
+                        "duration": "3",
+                    },
+                    'schedule': {
+                        "from": 0,
+                        "until": 14,
+                        "duration": 0,
+                        "interval": 2,
+                        "repeat": 1
+                    },
+                }
+            ]
+        }
+
+        ip, port = self.agent_plugin["umbraagent"].split(':')
+        channel = Channel(ip, int(port))
+        stub = AgentStub(channel)
+
+        instruction = json_format.ParseDict(agent_events, Instruction())
+        reply = await stub.Probe(instruction)
+        logger.info(f"agent reply={reply}")
+        channel.close()
 
     async def run(self, request):
         logger.info("Running config request")
@@ -204,7 +255,9 @@ class Operator:
             else:
                 ack,topo_info = await self.call_scenario(request.id, "stop", {}, address)
 
+            await self.call_agent_event(scenario)
             await self.call_env_event(request.id, scenario)
+
 
             """
             # sleep until all scheduled FabricEvent completes

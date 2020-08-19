@@ -51,7 +51,7 @@ class EnvEventHandler():
             action_call = env_event.call_scenario
             # action_sched = event_args.get('params', {}).get('schedule', {})
             action_sched = params.get('schedule', {})
-            logger.debug(f'ASD: action_sched={action_sched}')
+            logger.debug(f'REMOVEME: action_sched={action_sched}')
 
             calls[event_id] = (action_call, action_sched)
 
@@ -61,10 +61,10 @@ class EnvEventHandler():
     async def handle(self, events):
         # TODO: check the timing for log below and the next log "results=" to see whether
         # the task scheduling works as expected
-        logger.info("ASD: scheduling EnvEvent...")
+        logger.info("REMOVEME: scheduling EnvEvent...")
         calls = self.build_calls(events)
         results = await self.handler.run(calls)
-        logger.debug(f"ASD: results={results}")
+        logger.debug(f"REMOVEME: results={results}")
 
 
 class EnvEvent():

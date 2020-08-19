@@ -47,7 +47,8 @@ def build_simple_fabric_cfg():
     # fab_topo.add_peer("peer1", "org4", anchor=True, image_tag=image_tag)
 
     agent_image = "umbra-agent"
-    fab_topo.add_agent("umbraagent", domain, image=agent_image)
+    agent_name = "umbraagent" # umbraagent.example.com
+    fab_topo.add_agent(agent_name, domain, image=agent_image)
 
     ord_specs = [
         {"Hostname": "orderer"},
@@ -429,32 +430,37 @@ def build_simple_fabric_cfg():
         },
     }
 
-    ev_agent = [
-                {
-                    'id': "1",
-                    "tool": "ping",
-                    "output": {
-                        "live": False,
-                        "address": None,
-                    },
-                    'parameters': {
-                        "target": "peer0.org1.example.com",
-                        "interval": "1",
-                        "duration": "4",
-                    },
-                    'schedule': {
-                        "from": 1,
-                        "until": 0,
-                        "duration": 0,
-                        "interval": 0,
-                        "repeat": 0
-                    },
+    ev_agent = {
+        "agent_name": agent_name,
+        "id": "100",
+        "actions": [
+            {
+                'id': "1",
+                "tool": "ping",
+                "output": {
+                    "live": False,
+                    "address": None,
                 },
-    ]
+                'parameters': {
+                    "target": "peer0.org1.example.com",
+                    "interval": "1",
+                    "duration": "4",
+                },
+                'schedule': {
+                    "from": 1,
+                    "until": 0,
+                    "duration": 0,
+                    "interval": 0,
+                    "repeat": 0
+                },
+            },
+        ],
+    }
 
 
     scenario.add_event("0", "fabric", ev_info_channels)
     scenario.add_event("1", "fabric", ev_create_channel)
+    scenario.add_event("1", "agent", ev_agent)
     # TODO: kill_container event, note that the first arg for add_event
     # is not used since we will be using Handler scheduler.py
     # scenario.add_event("3", "environment", ev_kill_container_peer0_org1)
