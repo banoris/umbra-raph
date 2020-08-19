@@ -7,7 +7,7 @@ import networkx as nx
 import ipaddress
 from networkx.readwrite import json_graph
 from yaml import load, dump
-
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -1543,6 +1543,41 @@ class Events:
     def parse(self, data):
         self._events = data
 
+class EventsV2:
+    def __init__(self):
+        self._ev_id = 1;
+        self._events = defaultdict(lambda: [])
+
+    def add(self, when, category, ev_args, **kwargs):
+        """
+        Input for kwargs:
+
+        'until': time (in sec) limit to complete this event
+        'duration': expected time to complete an iteration, if 'repeat'
+            is set to run more than once
+        'interval': delay for the next iteration if 'repeat' is set
+        'repeat': repeat the cmd by 'x' iteration. Set to 0 to run
+            command only once
+
+        """
+        sched = {
+            "from": when,
+            "until": 0,
+            "duration": 0,
+            "interval": 0,
+            "repeat": 0
+        }
+        sched.update(kwargs)
+        ev_args["schedule"] = sched
+        ev_args["id"] = self._ev_id
+        self._events[category].append(ev_args)
+        self._ev_id += 1
+
+    def build(self):
+        return self._events
+
+    def parse(self, data):
+        self._events = data
 
 class Scenario:
     def __init__(self, id, entrypoint, folder):
@@ -1551,6 +1586,7 @@ class Scenario:
         self.folder = folder
         self.topology = None       
         self.events = Events()
+        self.eventsv2 = EventsV2()
 
     def parse(self, data):
         topo = Topology(None)
@@ -1558,6 +1594,7 @@ class Scenario:
         if ack:
             self.topology = topo
             self.events.parse(data.get("events", {}))
+            self.eventsv2.parse(data.get("eventsv2", {}))
             self.name = data.get("id", None)
             # TODO:FIXME: self.author??? typo? Issue #5
             # self.author = data.get("entrypoint", None)
@@ -1567,7 +1604,13 @@ class Scenario:
 
     def add_event(self, when, category, params):
         self.events.add(when, category, params)
-                    
+
+    def add_event_v2(self, when, category, ev_args):
+        """
+        category: fabric | environment | agent | monitor
+        """
+        self.eventsv2.add(when, category, ev_args)
+
     def set_topology(self, topology):
         self.topology = topology
 
@@ -1578,11 +1621,13 @@ class Scenario:
         logger.info(f"Scenario.dump")
         topo_built = self.topology.build()
         events_built = self.events.build()
+        eventsv2_built = self.eventsv2.build()
         scenario = {
             "id": self.id,
             "entrypoint": self.entrypoint,
             "topology": topo_built,
             "events": events_built,
+            "eventsv2": eventsv2_built
         }
         return scenario
 
