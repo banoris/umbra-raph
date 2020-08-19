@@ -18,6 +18,8 @@ from umbra.broker.plugins.env import EnvEventHandler
 
 logger = logging.getLogger(__name__)
 
+# port that umbra-agent binds to
+AGENT_PORT = "8910"
 
 class Operator:
     def __init__(self, info):
@@ -49,34 +51,32 @@ class Operator:
             
         return msg_bytes
 
-    def configure_agent(self, scenario):
+    def config_agent(self, deployed_topo, scenario):
         """
-        Parse 'scenario' dictionary to get agent's IP:PORT
-        and then populate to self.agent_plugin
+        Get agent(s) from 'scenario' and find its corresponding
+        IP:PORT from the 'deployed_topo'
+
+        Arguments:
+            deployed_topo {dict} -- deployed topology from umbra-scenario
+            scenario {dict} -- the user-defined scenario
+
         """
+        logger.info("Configuring umbra-agent plugin")
         umbra_topo = scenario.get("umbra").get("topology")
         agents = umbra_topo.get("agents")
 
-        for agent_name, agent_val in agents.items():
-            env_vars = agent_val.get("env")
-            agent_ip = None
-            agent_port = None
-            self.agent_plugin[agent_name] = {"agent_ip": agent_ip,
-                                             "agent_port": agent_port}
-            for env_var in env_vars:
-                env_name, env_value = env_var.split('=')
-                if env_name == "AGENT_ADDR":
-                    agent_ip = env_value
-                    self.agent_plugin[agent_name]["agent_ip"] = agent_ip
-                elif env_name == "AGENT_PORT":
-                    agent_port = env_value
-                    self.agent_plugin[agent_name]["agent_port"] = agent_port
-                else:
-                    logger.error("Error configuring agent=%s, env_name=%s, env_value=%s",
-                                    agent_name, env_name, env_value)
+        deployed_hosts = deployed_topo.get("topology").get("hosts")
 
-            logger.info(f"Added agent: agent_name = {agent_name}, at {agent_ip}:{agent_port}")
+        for hostname, host_val in deployed_hosts.items():
+            # tiny hack: e.g. umbraagent.example.com, strip the ".example.com"
+            subdomain = hostname.split('.')[0]
 
+            if subdomain in agents.keys():
+                agent_ip = host_val.get("host_ip")
+                self.agent_plugin[subdomain] = {"agent_ip": agent_ip,
+                                                "agent_port": AGENT_PORT}
+                logger.info("Added agent: agent_name = %s, at %s:%s",
+                    subdomain, agent_ip, AGENT_PORT)
 
     async def call_scenario(self, test, command, topology, address):
         logger.info(f"Deploying Scenario - {command}")
@@ -185,9 +185,9 @@ class Operator:
         if scenario:
             topology = scenario.get("topology")
             address = scenario.get("entrypoint")
-            self.configure_agent(topology)
             # NOTE: takes about 1.5mins to deploy topology
             ack,topo_info = await self.call_scenario(request.id, "start", topology, address)
+            self.config_agent(topo_info, topology)
             logger.info(f"topo_info={topo_info}")
             logger.info(f"scenario={scenario}")
 

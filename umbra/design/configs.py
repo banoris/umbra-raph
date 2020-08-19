@@ -19,6 +19,8 @@ NEIGHBOUR_EDGES = 5
 TOPOLOGIES_FOLDER = "./topos/"
 BASE_TOPOLOGIES_FOLDER = "./topos/base/"
 
+# port that umbra-agent binds
+AGENT_PORT = 8910
 
 class Graph:
     def __init__(self):
@@ -659,19 +661,21 @@ class FabricTopology(Topology):
         """
         Add umbraagent to the topology
 
-        NOTE:2020-08-14: only single agent is supported thus far. So, calling
+        NOTE:2020-08-14: only single agent is tested thus far. So, calling
         this API multiple times to add multiple agents likely won't work
         """
         agent = {
             "name": name,
             "domain": domain,
             "agent_fqdn": name + "." + domain,
-            "ports":[8910], # HARDCODE?
+            "ports":[AGENT_PORT],
             "org": None,
             "image": image,
             "image_tag": "1.0",
             "intf": 1,
-            "env": ["AGENT_PORT=8910"], # HARDCODE?
+            # AGENT_ADDR is set to the container $HOSTNAME. This will resolve to eth0
+            # which is the intf that bridges to the docker0 intf from host machine
+            "env": [f"AGENT_ADDR={name}", f"AGENT_PORT={AGENT_PORT}"],
             "ips": {},
         }
         agent.update(kwargs)
@@ -966,9 +970,6 @@ class FabricTopology(Topology):
                     agent["intf"] += 1
                     ip_addr = intf_ip.split('/')[0]
                     agent["ips"][intf_name] = ip_addr
-                    # TODO: need this env as arg to umbra/agent/umbraagent executable
-                    self.agent[org_name]["env"].append(f"AGENT_ADDR={ip_addr}")
-                    # self.agent[org_name]["env"].append(f"AGENT_ADDR=172.17.0.2")
 
     def _build_network_dns(self):
         logger.info("_build_network_dns")

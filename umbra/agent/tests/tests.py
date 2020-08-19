@@ -110,7 +110,7 @@ class TestAgent(unittest.TestCase):
                         "address": None,
                     },
                     'parameters': {
-                        "target": "127.0.0.1",
+                        "target": "peer0.org1.example.com",
                         "interval": "1",
                         "duration": "3",
                     },
@@ -129,7 +129,7 @@ class TestAgent(unittest.TestCase):
                 "actions": actions,
             }
 
-            channel = Channel("172.17.0.2", 8910)
+            channel = Channel("192.168.0.13", 8910)
             stub = AgentStub(channel)
 
             instruction = json_format.ParseDict(inst_dict, Instruction())

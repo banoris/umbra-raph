@@ -298,6 +298,7 @@ class Environment:
                 info = {
                     "name": host.name,
                     "intfs":  dict( [(intf.name,port) for (intf,port) in host.ports.items()] ), 
+                    "host_ip": self.get_host_ips(self.nodes[host.name]).get("ip", None)
                 }
                 full_info["hosts"][host.name] = info
 
