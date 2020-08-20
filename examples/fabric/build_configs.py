@@ -24,7 +24,11 @@ def build_simple_fabric_cfg():
     fab_topo = FabricTopology('fabric_simple', configs_dir, chaincode_dir)  
 
     # Defines scenario containing topology, so events can be added   
-    entrypoint = "172.17.0.1:8988"
+    # NOTE: these addr are also hardcoded at run.sh
+    entrypoint = {
+        "umbra-scenario": "172.17.0.1:8988",
+        "umbra-monitor" : "172.17.0.1:8990"
+    }
     scenario = Scenario(id="Fabric-Simple-01", entrypoint=entrypoint, folder=configs_dir)
     scenario.set_topology(fab_topo)
 
@@ -457,9 +461,37 @@ def build_simple_fabric_cfg():
         ],
     }
 
+    ev_monitor_v2 = {
+        "id": "101",
+        "actions": [
+            {
+                'id': "2",
+                "tool": "container",
+                "output": {
+                    "live": False,
+                    "address": None,
+                },
+                'parameters': {
+                    "target": "peer0.org1.example.com",
+                    "interval": "1",
+                    "duration": "1",
+                },
+                'schedule': {
+                    "from": 2,
+                    "until": 0,
+                    "duration": 0,
+                    "interval": 0,
+                    "repeat": 0
+                },
+            },
+        ],
+
+    }
+
     scenario.add_event("0", "fabric", ev_info_channels)
     scenario.add_event("1", "fabric", ev_create_channel)
     scenario.add_event_v2(1, "agent", ev_agent_v2)
+    scenario.add_event_v2(3, "monitor", ev_monitor_v2)
     # TODO: kill_container event, note that the first arg for add_event
     # is not used since we will be using Handler scheduler.py
     # scenario.add_event("3", "environment", ev_kill_container_peer0_org1)

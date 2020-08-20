@@ -9,7 +9,7 @@ from grpclib.exceptions import GRPCError
 
 from google.protobuf import json_format
 
-from umbra.common.protobuf.umbra_grpc import ScenarioStub, AgentStub
+from umbra.common.protobuf.umbra_grpc import ScenarioStub, AgentStub, MonitorStub
 from umbra.common.protobuf.umbra_pb2 import Report, Workflow, Instruction, Snapshot
 
 from umbra.design.configs import Topology, Scenario
@@ -156,7 +156,8 @@ class Operator:
 
     def config_env_event(self, wflow_id):
         logger.info("Configuring EnvironmentEvent")
-        self.events_env.config(self.scenario.entrypoint, wflow_id)
+        logger.info(f"self.scenario.entrypoint={self.scenario.entrypoint}")
+        self.events_env.config(self.scenario.entrypoint.get("umbra-scenario"), wflow_id)
         self.plugins["environment"] = self.events_env
 
     # TODO: maybe no need? call EnvironmentEvent.handler()
@@ -195,7 +196,30 @@ class Operator:
 
         instruction = json_format.ParseDict(instr_dict, Instruction())
         reply = await stub.Probe(instruction)
-        logger.info(f"agent reply={reply}")
+        # logger.info(f"agent reply={reply}")
+        channel.close()
+
+    async def call_monitor_event(self, scenario):
+        monitor_events = scenario.get("eventsv2").get("monitor")
+
+        # extract all the actions from agent_events to
+        # construct the Instruction message
+        monitor_actions = []
+        for ev in monitor_events:
+            for action in ev.get("actions"):
+                monitor_actions.append(action)
+
+        instr_dict = {
+            "id": scenario.get("id"),
+            "actions": monitor_actions
+        }
+
+        ip, port = self.scenario.entrypoint.get("umbra-monitor").split(':')
+        channel = Channel(ip, int(port))
+        stub = MonitorStub(channel)
+
+        instruction = json_format.ParseDict(instr_dict, Instruction())
+        reply = await stub.Listen(instruction)
         channel.close()
 
     async def run(self, request):
@@ -210,7 +234,7 @@ class Operator:
 
         if scenario:
             topology = scenario.get("topology")
-            address = scenario.get("entrypoint")
+            address = scenario.get("entrypoint").get("umbra-scenario")
             # NOTE: takes about 1.5mins to deploy topology
             ack,topo_info = await self.call_scenario(request.id, "start", topology, address)
             self.config_agent(topo_info, topology)
@@ -231,6 +255,7 @@ class Operator:
                 ack,topo_info = await self.call_scenario(request.id, "stop", {}, address)
 
             await self.call_agent_event(scenario)
+            await self.call_monitor_event(scenario)
             await self.call_env_event(request.id, scenario)
 
 
