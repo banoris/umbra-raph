@@ -172,53 +172,28 @@ class Operator:
         await self.events_env.handle(env_events)
 
     async def call_agent_event(self, scenario):
-        events = scenario.get("events")
+        agent_events = scenario.get("eventsv2").get("agent")
+        # '[0]' because we assume only single agent exist, thus all
+        # events should have the same "agent_name"
+        agent_name = agent_events[0].get("agent_name")
 
+        # extract all the actions from agent_events to
+        # construct the Instruction message
+        agent_actions = []
+        for ev in agent_events:
+            for action in ev.get("actions"):
+                agent_actions.append(action)
 
-        # TODO: redo `class Events` data model so you don't need to do all
-        # these nasty parsing :(
-
-        # filter out non-"agent" type events
-        # agent_params = {key: value for key, value in events.items()
-        #                 if value['category'] == "agent"}
-
-        # logger.info(f"agent_params={agent_params}")
-        # agent_events = agent_params.values().get("params")
-        # logger.info(f"agent_events={agent_events}")
-
-        # agent_name = agent_events.get("agent_name")
-
-        agent_events = {
-            "id": "100",
-            "actions": [
-                {
-                    'id': "1",
-                    "tool": "ping",
-                    "output": {
-                        "live": False,
-                        "address": None,
-                    },
-                    'parameters': {
-                        "target": "peer0.org1.example.com",
-                        "interval": "1",
-                        "duration": "3",
-                    },
-                    'schedule': {
-                        "from": 0,
-                        "until": 14,
-                        "duration": 0,
-                        "interval": 2,
-                        "repeat": 1
-                    },
-                }
-            ]
+        instr_dict = {
+            "id": scenario.get("id"),
+            "actions": agent_actions
         }
 
-        ip, port = self.agent_plugin["umbraagent"].split(':')
+        ip, port = self.agent_plugin[agent_name].split(':')
         channel = Channel(ip, int(port))
         stub = AgentStub(channel)
 
-        instruction = json_format.ParseDict(agent_events, Instruction())
+        instruction = json_format.ParseDict(instr_dict, Instruction())
         reply = await stub.Probe(instruction)
         logger.info(f"agent reply={reply}")
         channel.close()

@@ -430,7 +430,7 @@ def build_simple_fabric_cfg():
         },
     }
 
-    ev_agent = {
+    ev_agent_v2 = {
         "agent_name": agent_name,
         "id": "100",
         "actions": [
@@ -457,10 +457,9 @@ def build_simple_fabric_cfg():
         ],
     }
 
-
     scenario.add_event("0", "fabric", ev_info_channels)
     scenario.add_event("1", "fabric", ev_create_channel)
-    scenario.add_event("1", "agent", ev_agent)
+    scenario.add_event_v2(1, "agent", ev_agent_v2)
     # TODO: kill_container event, note that the first arg for add_event
     # is not used since we will be using Handler scheduler.py
     # scenario.add_event("3", "environment", ev_kill_container_peer0_org1)
@@ -476,7 +475,7 @@ def build_simple_fabric_cfg():
     scenario.add_event("3", "fabric", ev_join_channel_org3)
     scenario.add_event("3", "fabric", ev_join_channel_org4)
     scenario.add_event("5", "fabric", ev_info_channel)
-    scenario.add_event("5", "fabric", ev_info_channel_config)
+    # scenario.add_event("5", "fabric", ev_info_channel_config)
 
     # scenario.add_event("9", "fabric", ev_info_channels)
     # scenario.add_event("10", "fabric", ev_info_network)
