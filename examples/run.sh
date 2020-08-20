@@ -59,6 +59,7 @@ reset() {
 
     scenarioPID=`ps -o pid --no-headers -C umbra-scenario`
     brokerPID=`ps -o pid --no-headers -C umbra-broker`
+    monitorPID=`ps -o pid --no-headers -C umbra-monitor`
     examplesPID=`ps -o pid --no-headers -C examples.py`
 
     if [ -n "$brokerPID" ]
@@ -71,6 +72,12 @@ reset() {
     then
         echo_bold "Stopping umbra-scenario ${scenarioPID}"
         sudo kill -9 $scenarioPID &> /dev/null
+    fi
+
+    if [ -n "$scenarioPID" ]
+    then
+        echo_bold "Stopping umbra-monitor ${monitorPID}"
+        sudo kill -9 ${monitorPID} &> /dev/null
     fi
 
     if [ -n "$examplesPID" ]
@@ -139,6 +146,14 @@ case "$COMMAND" in
         nohup ${broker} > logs/broker.log 2>&1 &
         brokerPID=$!
         echo_bold "Broker PID ${brokerPID}"
+
+        # sudo needed to run tools like tcpdump
+        monitor="sudo umbra-monitor --uuid monitor --address 172.17.0.1:8990"
+        echo_bold "-> Starting umbra-monitor"
+        echo_bold "\$ ${monitor}"
+        nohup ${monitor} > logs/monitor.log 2>&1 &
+        monitorPID=$!
+        echo_bold "monitor PID ${monitorPID}"
 
         echo "########################################"
         echo "Running config ${CONFIG_SOURCE}"
