@@ -1,7 +1,9 @@
 import os
 import sys
 import logging
-
+import networkx as nx
+import matplotlib.pyplot as plt
+from networkx.drawing.nx_pydot import write_dot
 from umbra.design.configs import Profile, Topology, Scenario
 from umbra.design.configs import FabricTopology
 
@@ -522,7 +524,18 @@ def build_simple_fabric_cfg():
     # Save config file
     scenario.save()
     print("fab_topo.show()")
-    fab_topo.show()
+    
+    for (n1, n2, d) in fab_topo.graph.edges(data=True):
+        d.clear()
+
+    for (n, d) in fab_topo.graph.nodes(data=True):
+        d.clear()
+    # pos = nx.nx_agraph.graphviz_layout(fab_topo.graph.graph)
+    # nx.draw(fab_topo.graph)
+    write_dot(fab_topo.graph, "umbra_topo.dot")
+    # fab_topo.show()
+    # nx.draw(fab_topo.graph)
+    # plt.savefig("test1.png")
 
 def builds():
     build_simple_fabric_cfg()
